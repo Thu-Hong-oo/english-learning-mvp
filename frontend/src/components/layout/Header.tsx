@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown, Search } from "lucide-react";
-import {Button} from '../ui/Button';
+import {Button} from '../ui/button';
 const Header = () => {
   return (
     <header className="bg-white border-b border-gray-200">
