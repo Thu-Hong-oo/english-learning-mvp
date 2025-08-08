@@ -2,10 +2,10 @@ import {Button }from '../ui/button';
 
 export default function HeroSection() {
   return (
-    <section className="bg-gradient-to-r from-yellow-100 via-green-100 to-blue-100 py-20">
-      <div className="container mx-auto px-4">
+    <section className="bg-gradient-to-r from-yellow-100 via-green-100 to-blue-100 ">
+      <div className="container mx-auto px-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+          <div className="space-y-3">
             <h1 className="text-5xl font-bold text-gray-900 leading-tight">
               Build Skills With<br />
               Online Course

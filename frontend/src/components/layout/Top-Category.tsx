@@ -17,7 +17,7 @@ const categories = [
 export default function TopCategories() {
   return (
     <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-20">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Top Categories</h2>
@@ -32,7 +32,7 @@ export default function TopCategories() {
           {categories.map((category, index) => {
             const IconComponent = category.icon
             return (
-              <div key={index} className="text-center group cursor-pointer">
+              <div key={index} className="text-center group cursor-pointer border rounded-lg p-6 hover:shadow-lg transition-shadow">
                 <div className="w-16 h-16 mx-auto mb-4 bg-orange-50 rounded-full flex items-center justify-center group-hover:bg-orange-100 transition-colors">
                   <IconComponent className={`w-8 h-8 ${category.color}`} />
                 </div>

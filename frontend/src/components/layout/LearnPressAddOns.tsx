@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 export default function LearnPressAddOns() {
   return (
     <section className="py-20">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-20">
         <div className="bg-gradient-to-r from-green-100 via-purple-100 to-pink-100 rounded-3xl p-12 relative overflow-hidden">
           <div className="max-w-md">
             <p className="text-sm text-gray-600 mb-2">GET MORE POWER FROM</p>

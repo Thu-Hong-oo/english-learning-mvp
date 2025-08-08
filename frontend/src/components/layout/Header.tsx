@@ -1,47 +1,132 @@
-import React from "react";
-import { ChevronDown, Search } from "lucide-react";
-import {Button} from '../ui/button';
+import React, { useState } from "react";
+import { ChevronDown, Search, Menu, X } from "lucide-react";
+import { Button } from '../ui/button';
+
 const Header = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <header className="bg-white border-b border-gray-200">
-      <div className="container mx-auto px-4">
+    <header className="bg-white border-b border-gray-200 relative">
+      <div className="container mx-auto px-4 lg:px-20">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="logo">
-            <img src="/LOGO.png" alt="" />
+            <img src="/LOGO.png" alt="Logo" className="h-8 w-auto" />
           </div>
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
             <a href="#" className="text-orange-500 font-medium">
               Home
             </a>
-            <a href="#" className="text-gray-700 hover:text-orange-500">
+            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
               Courses
             </a>
-            <a href="#" className="text-gray-700 hover:text-orange-500">
+            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
               Blog
             </a>
-            <div className="flex items-center space-x-1">
-              <a href="#" className="text-gray-700 hover:text-orange-500">
+            <div className="flex items-center space-x-1 group relative">
+              <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
                 Page
               </a>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
+              <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" />
             </div>
-            <a href="#" className="text-gray-700 hover:text-orange-500">
+            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
               LearnPress Add-On
             </a>
-            <a href="#" className="text-gray-700 hover:text-orange-500">
+            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
               Premium Theme
             </a>
           </nav>
- {/* Right side */}
-          <div className="flex items-center space-x-4">
+
+          {/* Desktop Right side */}
+          <div className="hidden lg:flex items-center space-x-4">
             <span className="text-gray-700">Login / Register</span>
             <Button variant="ghost" size="sm">
               <Search className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden flex items-center space-x-2">
+            <Button variant="ghost" size="sm">
+              <Search className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleMobileMenu}
+              className="p-2"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
+            <nav className="px-4 py-6 space-y-4">
+              <a 
+                href="#" 
+                className="block text-orange-500 font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a 
+                href="#" 
+                className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Courses
+              </a>
+              <a 
+                href="#" 
+                className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Blog
+              </a>
+              <div className="py-2">
+                <a 
+                  href="#" 
+                  className="block text-gray-700 hover:text-orange-500 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Page
+                </a>
+              </div>
+              <a 
+                href="#" 
+                className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                LearnPress Add-On
+              </a>
+              <a 
+                href="#" 
+                className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Premium Theme
+              </a>
+              
+              {/* Mobile Login/Register */}
+              <div className="pt-4 border-t border-gray-200">
+                <span className="block text-gray-700 py-2">Login / Register</span>
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

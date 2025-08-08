@@ -75,7 +75,7 @@ const courses = [
 export default function FeaturedCourses() {
   return (
     <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-20">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Courses</h2>
