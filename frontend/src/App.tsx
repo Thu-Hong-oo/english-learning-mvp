@@ -7,8 +7,9 @@ import TopCategories from './components/layout/Top-Category'
 import StudentFeedback from './components/layout/StudentFeedback'
 import FeaturedCourses from './components/layout/FeatureCourse'
 import Footer from './components/layout/Footer'
-import LatestArtical from './components/layout/LatestArtical'
+import LatestArticle from './components/layout/LatestArticle'
 import LearnPressAddOns from './components/layout/LearnPressAddOns'
+import Statistics from './components/layout/Statistics'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -19,8 +20,9 @@ function App() {
       <TopCategories />
       <FeaturedCourses/>
       <LearnPressAddOns/>
+      <Statistics/>
       <StudentFeedback />
-      <LatestArtical/>
+      <LatestArticle/>
       <Footer/>
     </>
   )
