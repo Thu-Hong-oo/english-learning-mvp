@@ -5,7 +5,7 @@ const Footer = () => {
     return (
         <div>
             <footer className="bg-white border-t border-gray-200 py-16">
-                <div className="container mx-auto px-6">
+                <div className="container mx-auto px-4">
                     <div className="flex flex-nowrap justify-between items-start space-x-8 md:space-x-16 lg:space-x-24">
                         {/*Company infor */}
                         <div className="space-y-4 max-w-[500px]">

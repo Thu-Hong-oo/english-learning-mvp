@@ -7,6 +7,8 @@ import TopCategories from './components/layout/Top-Category'
 import StudentFeedback from './components/layout/StudentFeedback'
 import FeaturedCourses from './components/layout/FeatureCourse'
 import Footer from './components/layout/Footer'
+import LatestArtical from './components/layout/LatestArtical'
+import LearnPressAddOns from './components/layout/LearnPressAddOns'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -16,7 +18,9 @@ function App() {
       <HeroSection />
       <TopCategories />
       <FeaturedCourses/>
+      <LearnPressAddOns/>
       <StudentFeedback />
+      <LatestArtical/>
       <Footer/>
     </>
   )
