@@ -1,31 +1,41 @@
-import { useState } from 'react'
-
-import './App.css'
 import Header from './components/layout/Header'
 import HeroSection from './components/layout/HeroSection'
 import TopCategories from './components/layout/Top-Category'
-import StudentFeedback from './components/layout/StudentFeedback'
 import FeaturedCourses from './components/layout/FeatureCourse'
-import Footer from './components/layout/Footer'
-import LatestArticle from './components/layout/LatestArticle'
 import LearnPressAddOns from './components/layout/LearnPressAddOns'
 import Statistics from './components/layout/Statistics'
-function App() {
-  const [count, setCount] = useState(0)
+import StudentFeedback from './components/layout/StudentFeedback'
+import LatestArticle from './components/layout/LatestArticle'
+import Footer from './components/layout/Footer'
+import { Routes, Route } from 'react-router-dom'
+import AuthContainer from './components/layout/auth/AuthContainer'
+import LoginAndRegister from './pages/LoginAndRegisterPage'
 
+export default function App() {
   return (
     <>
-      <Header />
-      <HeroSection />
-      <TopCategories />
-      <FeaturedCourses/>
-      <LearnPressAddOns/>
-      <Statistics/>
-      <StudentFeedback />
-      <LatestArticle/>
-      <Footer/>
+    
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <HeroSection />
+              <TopCategories />
+              <FeaturedCourses />
+              <LearnPressAddOns />
+              <Statistics />
+              <StudentFeedback />
+              <LatestArticle />
+              <LoginAndRegister/>
+              <Footer />
+            </>
+          }
+        />
+        <Route path="/login" element={<LoginAndRegister />} />
+      </Routes>
+    
     </>
   )
 }
-
-export default App

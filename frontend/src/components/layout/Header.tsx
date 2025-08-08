@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { ChevronDown, Search, Menu, X } from "lucide-react";
+import React from "react";
+import { ChevronDown, Search, Menu, X , LogIn} from "lucide-react";
 import { Button } from '../ui/button';
 
 const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -45,7 +45,14 @@ const Header = () => {
 
           {/* Desktop Right side */}
           <div className="hidden lg:flex items-center space-x-4">
-            <span className="text-gray-700">Login / Register</span>
+            <Button 
+              variant="ghost" 
+              onClick={() => window.location.href = '/login'}
+              className="text-gray-700 font-bold hover:text-orange-500"
+            >
+              <LogIn className = "w-4 h-4"></LogIn>
+              Login
+            </Button>
             <Button variant="ghost" size="sm">
               <Search className="w-4 h-4" />
             </Button>
@@ -76,7 +83,7 @@ const Header = () => {
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50">
             <nav className="px-4 py-6 space-y-4">
               <a 
-                href="#" 
+                href="/" 
                 className="block text-orange-500 font-medium py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -122,7 +129,15 @@ const Header = () => {
               
               {/* Mobile Login/Register */}
               <div className="pt-4 border-t border-gray-200">
-                <span className="block text-gray-700 py-2">Login / Register</span>
+                <button 
+                  className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    window.location.href = '/login';
+                  }}
+                >
+                  Login
+                </button>
               </div>
             </nav>
           </div>
