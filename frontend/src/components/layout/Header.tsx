@@ -1,12 +1,36 @@
-import React from "react";
-import { ChevronDown, Search, Menu, X , LogIn} from "lucide-react";
+import React, { useState } from "react";
+import { ChevronDown, Search, Menu, X, LogIn, User, LogOut, Settings } from "lucide-react";
 import { Button } from '../ui/button';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { logout } from '../../store/slices/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  
+  // Redux hooks
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(state => state.auth.user);
+  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setIsUserMenuOpen(false);
+    navigate('/');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -45,14 +69,73 @@ const Header = () => {
 
           {/* Desktop Right side */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => window.location.href = '/login'}
-              className="text-gray-700 font-bold hover:text-orange-500"
-            >
-              <LogIn className = "w-4 h-4"></LogIn>
-              Login
-            </Button>
+            {isAuthenticated && user ? (
+              // User đã đăng nhập - Hiển thị user menu
+              <div className="relative">
+                <Button 
+                  variant="ghost" 
+                  onClick={toggleUserMenu}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-orange-500"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">{user.fullName || user.username}</span>
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+
+                {/* User Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        // Có thể navigate đến profile page sau này
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        // Có thể navigate đến settings page sau này
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </button>
+                    
+                    <div className="border-t border-gray-100">
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // User chưa đăng nhập - Hiển thị nút Login
+              <Button 
+                variant="ghost" 
+                onClick={handleLogin}
+                className="text-gray-700 font-bold hover:text-orange-500"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            )}
+            
             <Button variant="ghost" size="sm">
               <Search className="w-4 h-4" />
             </Button>
@@ -127,17 +210,53 @@ const Header = () => {
                 Premium Theme
               </a>
               
-              {/* Mobile Login/Register */}
+              {/* Mobile Login/User Menu */}
               <div className="pt-4 border-t border-gray-200">
-                <button 
-                  className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    window.location.href = '/login';
-                  }}
-                >
-                  Login
-                </button>
+                {isAuthenticated && user ? (
+                  <div className="space-y-2">
+                    <div className="px-2 py-1">
+                      <p className="text-sm font-medium text-gray-900">{user.fullName || user.username}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <button 
+                      className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        // Có thể navigate đến profile page sau này
+                      }}
+                    >
+                      Profile
+                    </button>
+                    <button 
+                      className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        // Có thể navigate đến settings page sau này
+                      }}
+                    >
+                      Settings
+                    </button>
+                    <button 
+                      className="block text-red-600 py-2 hover:text-red-700 transition-colors"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleLogout();
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleLogin();
+                    }}
+                  >
+                    Login
+                  </button>
+                )}
               </div>
             </nav>
           </div>

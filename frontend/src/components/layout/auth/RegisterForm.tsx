@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { apiService } from '../../../services/api';
-import type { RegisterRequest } from '../../../services/api';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { registerUser, clearError } from '../../../store/slices/authSlice';
 
 interface RegisterFormProps {
   onSuccess?: (email: string) => void; // callback when register successfully
@@ -19,40 +19,36 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  
+  // Redux hooks
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector(state => state.auth);
+
+  // Xóa lỗi khi component mount
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError('Mật khẩu không khớp');
       return;
     }
 
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const registerData: RegisterRequest = {
-        username: name.toLowerCase().replace(/\s+/g, ''),
-        email,
-        password,
-        fullName: name
-      };
-      
-      const response = await apiService.register(registerData);
-
-      if (response.success) {
-        setError('');
-        onSuccess?.(email);
-      } else {
-        setError(response.message || 'Đăng ký thất bại');
-      }
-    } catch (error: any) {
-      setError(error.message || 'Có lỗi xảy ra khi đăng ký');
-    } finally {
-      setIsLoading(false);
+    // Dispatch register action
+    const result = await dispatch(registerUser({
+      username: name.toLowerCase().replace(/\s+/g, ''),
+      email,
+      password,
+      fullName: name
+    }));
+    
+    // Kiểm tra kết quả
+    if (registerUser.fulfilled.match(result)) {
+      // Đăng ký thành công
+      onSuccess?.(email);
     }
+    // Nếu thất bại, error sẽ được hiển thị tự động từ Redux state
   };
 
   const isFormValid = name && email && password && confirmPassword && agreedToTerms && password === confirmPassword;
@@ -84,6 +80,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -102,6 +99,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -120,11 +118,13 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -145,11 +145,13 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-10 pr-10"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={loading}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -166,6 +168,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
                 className="mt-1"
+                disabled={loading}
               />
               <label htmlFor="terms" className="text-sm text-gray-600">
                 Tôi đồng ý với <a href="#" className="text-orange-500 hover:text-orange-600">Điều khoản sử dụng</a> và <a href="#" className="text-orange-500 hover:text-orange-600">Chính sách bảo mật</a>
@@ -181,9 +184,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             <Button
               type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2"
-              disabled={isLoading || !isFormValid}
+              disabled={loading || !isFormValid}
             >
-              {isLoading ? (
+              {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Đang tạo tài khoản...</span>
@@ -198,6 +201,7 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
                 type="button"
                 onClick={onSwitchToLogin}
                 className="text-sm text-gray-600 hover:text-gray-800 underline"
+                disabled={loading}
               >
                 Đã có tài khoản? Đăng nhập ngay
               </button>

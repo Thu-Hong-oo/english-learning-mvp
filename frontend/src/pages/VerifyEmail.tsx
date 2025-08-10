@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { apiService } from '../services/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { verifyEmail, resendOTP, clearError } from '../store/slices/authSlice';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [otp, setOtp] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
   const [email, setEmail] = useState(location.state?.email || '');
+  
+  // Redux hooks
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector(state => state.auth);
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  // Xóa lỗi khi component mount
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,27 +29,23 @@ const VerifyEmail: React.FC = () => {
       return;
     }
 
-    setStatus('loading');
-    setMessage('Đang xác thực...');
+    setStatus('idle');
+    setMessage('');
 
-    try {
-      const response = await apiService.verifyEmail({ otp });
-
-      if (response.success) {
-        setStatus('success');
-        setMessage('Email đã được xác thực thành công! Bạn có thể đăng nhập ngay bây giờ.');
-        
-        // Chuyển hướng về trang đăng nhập sau 3 giây
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
-      } else {
-        setStatus('error');
-        setMessage(response.message || 'Xác thực email thất bại');
-      }
-    } catch (error: any) {
+    // Dispatch verify email action
+    const result = await dispatch(verifyEmail(otp));
+    
+    if (verifyEmail.fulfilled.match(result)) {
+      setStatus('success');
+      setMessage('Email đã được xác thực thành công! Bạn có thể đăng nhập ngay bây giờ.');
+      
+      // Chuyển hướng về trang đăng nhập sau 3 giây
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } else if (verifyEmail.rejected.match(result)) {
       setStatus('error');
-      setMessage(error.message || 'Có lỗi xảy ra khi xác thực email');
+      setMessage(error || 'Xác thực email thất bại');
     }
   };
 
@@ -50,23 +56,19 @@ const VerifyEmail: React.FC = () => {
       return;
     }
 
-    setStatus('loading');
-    setMessage('Đang gửi lại OTP...');
+    setStatus('idle');
+    setMessage('');
 
-    try {
-      const response = await apiService.sendVerification({ email });
-
-      if (response.success) {
-        setStatus('success');
-        setMessage('OTP mới đã được gửi lại đến email của bạn!');
-        setOtp(''); // Reset OTP input
-      } else {
-        setStatus('error');
-        setMessage(response.message || 'Gửi lại OTP thất bại');
-      }
-    } catch (error: any) {
+    // Dispatch resend OTP action
+    const result = await dispatch(resendOTP(email));
+    
+    if (resendOTP.fulfilled.match(result)) {
+      setStatus('success');
+      setMessage('OTP mới đã được gửi lại đến email của bạn!');
+      setOtp(''); // Reset OTP input
+    } else if (resendOTP.rejected.match(result)) {
       setStatus('error');
-      setMessage(error.message || 'Có lỗi xảy ra khi gửi lại OTP');
+      setMessage(error || 'Gửi lại OTP thất bại');
     }
   };
 
@@ -87,6 +89,7 @@ const VerifyEmail: React.FC = () => {
                 placeholder="Nhập email đã đăng ký"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                disabled={loading}
               />
               {location.state?.email && (
                 <p className="text-xs text-green-600 mt-1">
@@ -108,6 +111,7 @@ const VerifyEmail: React.FC = () => {
                 maxLength={6}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg font-mono tracking-widest"
                 required
+                disabled={loading}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Mã OTP đã được gửi đến email của bạn
@@ -117,29 +121,22 @@ const VerifyEmail: React.FC = () => {
             <div className="flex space-x-3">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
               >
-                Xác thực Email
+                {loading ? 'Đang xác thực...' : 'Xác thực Email'}
               </button>
               
               <button
                 type="button"
                 onClick={handleResendOTP}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
               >
                 Gửi lại OTP
               </button>
             </div>
           </form>
-        );
-
-      case 'loading':
-        return (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Đang xử lý...</h2>
-            <p className="text-gray-600">{message}</p>
-          </div>
         );
 
       case 'success':
