@@ -49,7 +49,7 @@ export default function AuthContainer() {
 
   return (
     <div className="min-h-screen ">
-      <div className="container mx-auto px-4 py-2">
+      <div className="container mx-auto px-4 py-2 ">
         <div className='flex justify-end mb-2'>
         <button
               onClick={() => setIsLogin(true)}
