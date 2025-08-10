@@ -7,8 +7,8 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser1",
-  "email": "test1@email.com",
+  "username": "test45viirrr",
+  "email": "thuhong05022003@gmail.com",
   "password": "123456",
   "fullName": "Test User 1",
   "role": "student"
@@ -40,26 +40,35 @@ Content-Type: application/json
   // Thiếu password và fullName
 }
 
-# ========================================
-# 2. TEST ĐĂNG NHẬP
-# ========================================
-POST http://localhost:5000/api/auth/login
+POST http://localhost:3000/api/auth/verify-email
 Content-Type: application/json
 
 {
-  "email": "test1@email.com",
+  "otp": "893069"
+}
+
+# ========================================
+# 2. TEST ĐĂNG NHẬP
+# ========================================\
+
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "thuhong05022003@gmail.com",
   "password": "123456"
 }
 
+
+
 ###
 
-# Test đăng nhập sai password
-POST http://localhost:5000/api/auth/login
+# Test đăng nhập sai passwordPOST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "test1@email.com",
-  "password": "wrongpassword"
+  "email": "thuhong05022003@gmail.com",
+  "password": "123456"
 }
 
 ###
@@ -237,3 +246,101 @@ Content-Type: application/json
 # - Thay TOKEN_HERE bằng token thật
 # - Test từng request một để dễ debug
 # - Xem response status và body để kiểm tra
+
+# ========================================
+# 8. TEST EMAIL VERIFICATION
+# ========================================
+# Test gửi email xác nhận
+POST http://localhost:5000/api/auth/send-verification
+Content-Type: application/json
+
+{
+  "email": "testuser45@example.com"
+}
+
+###
+
+# Test gửi lại email xác nhận
+POST http://localhost:5000/api/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "testuser45@example.com"
+}
+
+###
+
+# Test xác thực email với OTP (thay OTP_CODE bằng OTP thật)
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "893069"
+}
+
+###
+
+# Test xác thực email với OTP sai
+POST http://localhost:5000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "000000"
+}
+
+# ========================================
+# 9. TEST FLOW ĐĂNG KÝ + XÁC THỰC EMAIL
+# ========================================
+# Bước 1: Đăng ký user mới (sẽ tự động gửi email xác nhận)
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "verify_user",
+  "email": "verify@email.com",
+  "password": "123456",
+  "fullName": "Verify User",
+  "role": "student"
+}
+
+###
+
+# Bước 2: Thử đăng nhập (sẽ báo lỗi email chưa xác thực)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "verify@email.com",
+  "password": "123456"
+}
+
+###
+
+# Bước 3: Gửi lại email xác nhận nếu cần
+POST http://localhost:5000/api/auth/send-verification
+Content-Type: application/json
+
+{
+  "email": "verify@email.com"
+}
+
+###
+
+# Bước 4: Xác thực email với OTP (thay OTP_CODE bằng OTP thật)
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "843762"
+}
+
+###
+
+# Bước 5: Đăng nhập sau khi xác thực email
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "thuhong05022003@gmail.com",
+  "password": "123456"
+}

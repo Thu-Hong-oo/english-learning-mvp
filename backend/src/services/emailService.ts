@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Email configuration
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
@@ -14,23 +14,25 @@ const transporter = nodemailer.createTransporter({
 
 // Email templates
 export const emailTemplates = {
-  verification: (username: string, verificationUrl: string) => ({
+  verification: (username: string, otp: string) => ({
     subject: 'Xác thực email - English Website',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Xin chào ${username}!</h2>
         <p>Cảm ơn bạn đã đăng ký tài khoản tại English Website.</p>
-        <p>Vui lòng click vào link bên dưới để xác thực email của bạn:</p>
+        <p>Mã xác thực email của bạn là:</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" 
-             style="background-color: #2563eb; color: white; padding: 12px 24px; 
-                    text-decoration: none; border-radius: 6px; display: inline-block;">
-            Xác thực Email
-          </a>
+          <div style="background-color: #f3f4f6; border: 2px solid #2563eb; border-radius: 8px; 
+                      padding: 20px; display: inline-block; font-family: monospace;">
+            <span style="font-size: 32px; font-weight: bold; color: #2563eb; letter-spacing: 8px;">${otp}</span>
+          </div>
         </div>
-        <p>Hoặc copy link này vào trình duyệt:</p>
-        <p style="word-break: break-all; color: #2563eb;">${verificationUrl}</p>
-        <p>Link này sẽ hết hạn sau 24 giờ.</p>
+        <p style="text-align: center; color: #6b7280; font-size: 14px;">
+          Mã này sẽ hết hạn sau 10 phút.
+        </p>
+        <p style="text-align: center; margin-top: 20px;">
+          <strong>Lưu ý:</strong> Không chia sẻ mã này với bất kỳ ai.
+        </p>
         <p>Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này.</p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
         <p style="color: #6b7280; font-size: 14px;">
@@ -73,7 +75,12 @@ export const emailTemplates = {
 // Send email function
 export const sendEmail = async (to: string, template: keyof typeof emailTemplates, data: any) => {
   try {
-    const emailContent = emailTemplates[template](data.username, data.verificationUrl || '');
+    let emailContent;
+    if (template === 'verification') {
+      emailContent = emailTemplates[template](data.username, data.otp || '');
+    } else {
+      emailContent = emailTemplates[template](data.username);
+    }
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -87,17 +94,15 @@ export const sendEmail = async (to: string, template: keyof typeof emailTemplate
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending email:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 };
 
 // Send verification email
-export const sendVerificationEmail = async (email: string, username: string, token: string) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
-  
+export const sendVerificationEmail = async (email: string, username: string, otp: string) => {
   return await sendEmail(email, 'verification', {
     username,
-    verificationUrl
+    otp
   });
 };
 

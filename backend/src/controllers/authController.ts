@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User, { IUser } from '../models/User';
 import { sendVerificationEmail, sendWelcomeEmail } from '../services/emailService';
+import { handleGoogleAuth } from '../services/googleAuthService';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -42,6 +43,18 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         await user.save();
 
+        // Generate email verification OTP
+        const verificationOTP = user.generateEmailVerificationOTP();
+        await user.save();
+
+        // Send verification email
+        try {
+            await sendVerificationEmail(user.email, user.username, verificationOTP);
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            // Continue with registration even if email fails
+        }
+
         // Generate JWT token
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role },
@@ -51,10 +64,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'User registered successfully. Please check your email to verify your account.',
             data: {
                 user: user.toJSON(),
-                token
+                token,
+                emailVerificationSent: true
             }
         });
 
@@ -88,6 +102,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             res.status(401).json({
                 success: false,
                 message: 'Account is deactivated'
+            });
+            return;
+        }
+
+        // Check if email is verified
+        if (!user.isEmailVerified) {
+            res.status(401).json({
+                success: false,
+                message: 'Please verify your email before logging in. Check your inbox or request a new verification email.',
+                code: 'EMAIL_NOT_VERIFIED'
             });
             return;
         }
@@ -218,14 +242,12 @@ export const sendVerification = async (req: Request, res: Response): Promise<voi
             return;
         }
 
-        // Generate verification token
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-        user.emailVerificationToken = verificationToken;
-        user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        // Generate verification OTP
+        const verificationOTP = user.generateEmailVerificationOTP();
         await user.save();
 
         // Send verification email
-        await sendVerificationEmail(user.email, user.username, verificationToken);
+        await sendVerificationEmail(user.email, user.username, verificationOTP);
 
         res.json({
             success: true,
@@ -242,28 +264,36 @@ export const sendVerification = async (req: Request, res: Response): Promise<voi
     }
 };
 
-// Verify email
+// Verify email with OTP
 export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { token } = req.params;
+        const { otp } = req.body;
+
+        if (!otp) {
+            res.status(400).json({
+                success: false,
+                message: 'OTP is required'
+            });
+            return;
+        }
 
         const user = await User.findOne({
-            emailVerificationToken: token,
-            emailVerificationExpires: { $gt: new Date() }
+            emailVerificationOTP: otp,
+            emailVerificationOTPExpires: { $gt: new Date() }
         });
 
         if (!user) {
             res.status(400).json({
                 success: false,
-                message: 'Invalid or expired verification token'
+                message: 'Invalid or expired OTP'
             });
             return;
         }
 
         // Mark email as verified
         user.isEmailVerified = true;
-        user.emailVerificationToken = undefined;
-        user.emailVerificationExpires = undefined;
+        user.emailVerificationOTP = undefined;
+        user.emailVerificationOTPExpires = undefined;
         await user.save();
 
         // Send welcome email
@@ -314,8 +344,8 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
             return;
         }
 
-        // Check if previous token is still valid
-        if (user.emailVerificationExpires && user.emailVerificationExpires > new Date()) {
+        // Check if previous OTP is still valid
+        if (user.emailVerificationOTPExpires && user.emailVerificationOTPExpires > new Date()) {
             res.status(400).json({
                 success: false,
                 message: 'Please wait before requesting another verification email'
@@ -323,14 +353,12 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
             return;
         }
 
-        // Generate new verification token
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-        user.emailVerificationToken = verificationToken;
-        user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        // Generate new verification OTP
+        const verificationOTP = user.generateEmailVerificationOTP();
         await user.save();
 
         // Send verification email
-        await sendVerificationEmail(user.email, user.username, verificationToken);
+        await sendVerificationEmail(user.email, user.username, verificationOTP);
 
         res.json({
             success: true,
@@ -342,6 +370,42 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
         res.status(500).json({
             success: false,
             message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+
+// Google OAuth login/register
+export const googleAuth = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            res.status(400).json({
+                success: false,
+                message: 'Google ID token is required'
+            });
+            return;
+        }
+
+        // Handle Google OAuth
+        const result = await handleGoogleAuth(idToken);
+
+        res.json({
+            success: true,
+            message: result.isNewUser ? 'User registered successfully via Google' : 'User logged in successfully via Google',
+            data: {
+                user: result.user,
+                token: result.token,
+                isNewUser: result.isNewUser
+            }
+        });
+
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Google authentication failed',
             error: error instanceof Error ? error.message : 'Unknown error'
         });
     }

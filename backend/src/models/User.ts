@@ -20,6 +20,8 @@ export interface IUser extends Document {
     isEmailVerified: boolean;
     emailVerificationToken?: string;
     emailVerificationExpires?: Date;
+    emailVerificationOTP?: string;
+    emailVerificationOTPExpires?: Date;
     
     // Password reset
     passwordResetToken?: string;
@@ -40,6 +42,7 @@ export interface IUser extends Document {
     // Methods
     comparePassword(candidatePassword: string): Promise<boolean>;
     generateEmailVerificationToken(): string;
+    generateEmailVerificationOTP(): string;
     generatePasswordResetToken(): string;
     toJSON(): any;
 }
@@ -101,6 +104,8 @@ const userSchema = new Schema<IUser>({
     },
     emailVerificationToken: String,
     emailVerificationExpires: Date,
+    emailVerificationOTP: String,
+    emailVerificationOTPExpires: Date,
     
     // Password reset
     passwordResetToken: String,
@@ -152,6 +157,7 @@ userSchema.index({ username: 1 });
 userSchema.index({ googleId: 1 });
 userSchema.index({ facebookId: 1 });
 userSchema.index({ emailVerificationToken: 1 });
+userSchema.index({ emailVerificationOTP: 1 });
 userSchema.index({ passwordResetToken: 1 });
 
 // Hash password before saving (only for local auth)
@@ -181,6 +187,14 @@ userSchema.methods.generateEmailVerificationToken = function(): string {
     return token;
 };
 
+// Generate email verification OTP
+userSchema.methods.generateEmailVerificationOTP = function(): string {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+    this.emailVerificationOTP = otp;
+    this.emailVerificationOTPExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    return otp;
+};
+
 // Generate password reset token
 userSchema.methods.generatePasswordResetToken = function(): string {
     const token = require('crypto').randomBytes(32).toString('hex');
@@ -195,6 +209,8 @@ userSchema.methods.toJSON = function() {
     delete user.password;
     delete user.emailVerificationToken;
     delete user.emailVerificationExpires;
+    delete user.emailVerificationOTP;
+    delete user.emailVerificationOTPExpires;
     delete user.passwordResetToken;
     delete user.passwordResetExpires;
     return user;
