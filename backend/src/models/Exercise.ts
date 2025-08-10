@@ -7,18 +7,19 @@ export interface IExercise extends Document {
     difficulty: 'easy' | 'medium' | 'hard';
     points: number;
     timeLimit?: number; // in seconds
-    lessonId: mongoose.Types.ObjectId;
-    courseId: mongoose.Types.ObjectId;
+    lesson: mongoose.Types.ObjectId; // Reference to Lesson
+    order: number; // exercise order within lesson
     
-    // Exercise content based on type
-    content: {
+    // Questions array for multiple questions
+    questions: Array<{
         question: string;
         options?: string[]; // for multiple choice
         correctAnswer: string | string[];
         explanation?: string;
+        points?: number;
         audioUrl?: string;
         imageUrl?: string;
-    };
+    }>;
     
     // For fill-in-the-blank exercises
     blanks?: Array<{
@@ -33,8 +34,10 @@ export interface IExercise extends Document {
         right: string;
     }>;
     
+    passingScore: number; // percentage to pass (default 70)
     isPublished: boolean;
-    createdBy: mongoose.Types.ObjectId;
+    teacher: mongoose.Types.ObjectId; // Reference to User (teacher)
+    status: 'draft' | 'published' | 'archived';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -70,17 +73,17 @@ const exerciseSchema = new Schema<IExercise>({
         type: Number,
         min: 0
     },
-    lessonId: {
+    lesson: {
         type: Schema.Types.ObjectId,
         ref: 'Lesson',
         required: true
     },
-    courseId: {
-        type: Schema.Types.ObjectId,
-        ref: 'Course',
-        required: true
+    order: {
+        type: Number,
+        required: true,
+        min: 1
     },
-    content: {
+    questions: [{
         question: {
             type: String,
             required: true
@@ -91,9 +94,13 @@ const exerciseSchema = new Schema<IExercise>({
             required: true
         },
         explanation: String,
+        points: {
+            type: Number,
+            default: 1
+        },
         audioUrl: String,
         imageUrl: String
-    },
+    }],
     blanks: [{
         position: {
             type: Number,
@@ -115,23 +122,35 @@ const exerciseSchema = new Schema<IExercise>({
             required: true
         }
     }],
+    passingScore: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 70
+    },
     isPublished: {
         type: Boolean,
         default: false
     },
-    createdBy: {
+    teacher: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
     }
 }, {
     timestamps: true
 });
 
 // Index for better query performance
-exerciseSchema.index({ lessonId: 1, type: 1 });
-exerciseSchema.index({ courseId: 1, difficulty: 1 });
-exerciseSchema.index({ createdBy: 1 });
+exerciseSchema.index({ lesson: 1, order: 1 });
+exerciseSchema.index({ lesson: 1, type: 1 });
+exerciseSchema.index({ teacher: 1 });
+exerciseSchema.index({ status: 1 });
 
 const Exercise = mongoose.model<IExercise>('Exercise', exerciseSchema);
 

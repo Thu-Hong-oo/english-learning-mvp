@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IComment extends Document {
-    userId: mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId; // Reference to User
     content: string;
     
     // Comment can be on different types of content
@@ -21,6 +21,14 @@ export interface IComment extends Document {
     isReported: boolean;
     reportReason?: string;
     
+    // Edit tracking
+    isEdited: boolean;
+    editedAt?: Date;
+    
+    // Soft delete
+    isDeleted: boolean;
+    deletedAt?: Date;
+    
     // Language learning specific
     language?: 'en' | 'vi'; // comment language
     translation?: string; // if comment is in Vietnamese
@@ -30,7 +38,7 @@ export interface IComment extends Document {
 }
 
 const commentSchema = new Schema<IComment>({
-    userId: {
+    user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -74,6 +82,16 @@ const commentSchema = new Schema<IComment>({
         default: false
     },
     reportReason: String,
+    isEdited: {
+        type: Boolean,
+        default: false
+    },
+    editedAt: Date,
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: Date,
     language: {
         type: String,
         enum: ['en', 'vi'],
@@ -86,9 +104,10 @@ const commentSchema = new Schema<IComment>({
 
 // Index for better query performance
 commentSchema.index({ contentType: 1, contentId: 1 });
-commentSchema.index({ userId: 1 });
+commentSchema.index({ user: 1 });
 commentSchema.index({ parentId: 1 });
 commentSchema.index({ isApproved: 1, isReported: 1 });
+commentSchema.index({ isDeleted: 1 });
 
 const Comment = mongoose.model<IComment>('Comment', commentSchema);
 

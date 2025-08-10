@@ -4,10 +4,12 @@ export interface ILesson extends Document {
     title: string;
     description: string;
     content: string;
-    courseId: mongoose.Types.ObjectId;
+    course: mongoose.Types.ObjectId; // Reference to Course
     order: number; // lesson order within course
     duration: number; // in minutes
     type: 'video' | 'text' | 'interactive' | 'quiz';
+    thumbnail?: string;
+    videoUrl?: string;
     materials: {
         videoUrl?: string;
         audioUrl?: string;
@@ -23,7 +25,8 @@ export interface ILesson extends Document {
     grammarPoints: string[];
     exercises: mongoose.Types.ObjectId[];
     isPublished: boolean;
-    createdBy: mongoose.Types.ObjectId;
+    teacher: mongoose.Types.ObjectId; // Reference to User (teacher)
+    status: 'draft' | 'published' | 'archived';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -44,7 +47,7 @@ const lessonSchema = new Schema<ILesson>({
         type: String,
         required: true
     },
-    courseId: {
+    course: {
         type: Schema.Types.ObjectId,
         ref: 'Course',
         required: true
@@ -63,6 +66,14 @@ const lessonSchema = new Schema<ILesson>({
         type: String,
         enum: ['video', 'text', 'interactive', 'quiz'],
         required: true
+    },
+    thumbnail: {
+        type: String,
+        default: null
+    },
+    videoUrl: {
+        type: String,
+        default: null
     },
     materials: {
         videoUrl: String,
@@ -98,19 +109,25 @@ const lessonSchema = new Schema<ILesson>({
         type: Boolean,
         default: false
     },
-    createdBy: {
+    teacher: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
     }
 }, {
     timestamps: true
 });
 
 // Index for better query performance
-lessonSchema.index({ courseId: 1, order: 1 });
-lessonSchema.index({ courseId: 1, isPublished: 1 });
-lessonSchema.index({ createdBy: 1 });
+lessonSchema.index({ course: 1, order: 1 });
+lessonSchema.index({ course: 1, isPublished: 1 });
+lessonSchema.index({ teacher: 1 });
+lessonSchema.index({ status: 1 });
 
 const Lesson = mongoose.model<ILesson>('Lesson', lessonSchema);
 

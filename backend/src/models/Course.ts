@@ -10,11 +10,16 @@ export interface ICourse extends Document {
     lessonsCount: number;
     isPublished: boolean;
     createdBy: mongoose.Types.ObjectId;
+    teacher: mongoose.Types.ObjectId; // Reference to User (teacher)
+    lessons: mongoose.Types.ObjectId[]; // Reference to Lesson documents
     tags: string[];
     difficulty: number; // 1-5 scale
     rating: number;
     totalStudents: number;
     price: number; // 0 for free courses
+    requirements?: string[];
+    objectives?: string[];
+    status: 'draft' | 'published' | 'archived';
     createdAt: Date;
     updatedAt: Date;
 }
@@ -63,6 +68,15 @@ const courseSchema = new Schema<ICourse>({
         ref: 'User',
         required: true
     },
+    teacher: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    lessons: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Lesson'
+    }],
     tags: [{
         type: String,
         trim: true
@@ -87,6 +101,19 @@ const courseSchema = new Schema<ICourse>({
         type: Number,
         min: 0,
         default: 0
+    },
+    requirements: [{
+        type: String,
+        trim: true
+    }],
+    objectives: [{
+        type: String,
+        trim: true
+    }],
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
     }
 }, {
     timestamps: true
@@ -95,7 +122,9 @@ const courseSchema = new Schema<ICourse>({
 // Index for better query performance
 courseSchema.index({ category: 1, level: 1, isPublished: 1 });
 courseSchema.index({ createdBy: 1 });
+courseSchema.index({ teacher: 1 });
 courseSchema.index({ tags: 1 });
+courseSchema.index({ status: 1 });
 
 const Course = mongoose.model<ICourse>('Course', courseSchema);
 

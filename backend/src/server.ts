@@ -4,6 +4,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes';
 
+
+
 // Load environment variables
 dotenv.config();
 
@@ -36,6 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ message: 'Welcome to English Learning Website API' });
