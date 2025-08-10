@@ -1,4 +1,8 @@
-import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';// SMTP: simple Mail Transfer Protocol
+//25: cổng mặc đinh, nhưng hay bị chặn bởi ISP để chống spam
+//465: cổng mặc đinh cho SSL/TLS(Secure Sockets Layer – một giao thức bảo mật cũ, dùng để mã hóa dữ liệu khi truyền qua mạng.)
+//587: cổng mặc đinh cho TLS(ransport Layer Security – phiên bản mới và an toàn hơn của SSL.)
+//2525: cổng mặc đinh cho TLS
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -19,7 +23,7 @@ export const emailTemplates = {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #2563eb;">Xin chào ${username}!</h2>
-        <p>Cảm ơn bạn đã đăng ký tài khoản tại English Website.</p>
+        <p>Cảm ơn bạn đã đăng ký tài khoản tại EnglishEduPress.</p>
         <p>Mã xác thực email của bạn là:</p>
         <div style="text-align: center; margin: 30px 0;">
           <div style="background-color: #f3f4f6; border: 2px solid #2563eb; border-radius: 8px; 
@@ -82,7 +86,7 @@ export const sendEmail = async (to: string, template: keyof typeof emailTemplate
       emailContent = emailTemplates[template](data.username);
     }
     
-    const mailOptions = {
+    const mailOptions = {// cấu hình email gửi đi 
       from: process.env.EMAIL_USER,
       to: to,
       subject: emailContent.subject,
