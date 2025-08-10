@@ -8,8 +8,8 @@ import StudentFeedback from './components/layout/StudentFeedback'
 import LatestArticle from './components/layout/LatestArticle'
 import Footer from './components/layout/Footer'
 import { Routes, Route } from 'react-router-dom'
-import AuthContainer from './components/layout/auth/AuthContainer'
 import LoginAndRegister from './pages/LoginAndRegisterPage'
+import VerifyEmail from './pages/VerifyEmail'
 
 export default function App() {
   return (
@@ -28,12 +28,12 @@ export default function App() {
               <Statistics />
               <StudentFeedback />
               <LatestArticle />
-              <LoginAndRegister/>
               <Footer />
             </>
           }
         />
         <Route path="/login" element={<LoginAndRegister />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Routes>
     
     </>

@@ -3,21 +3,53 @@ import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { apiService } from '../../../services/api';
+import type { LoginRequest } from '../../../services/api';
 
 interface LoginFormProps {
-  onSubmit: (email: string, password: string) => void;
-  isLoading?: boolean;
-  error?: string;
+  onSuccess?: () => void;
+  onSwitchToRegister?: () => void;
 }
 
-export default function LoginForm({ onSubmit, isLoading = false, error }: LoginFormProps) {
+export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(email, password);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const loginData: LoginRequest = { email, password };
+      const response = await apiService.login(loginData);
+
+      if (response.success) {
+        // Lưu token và user info
+        if (response.token) {
+          apiService.setAuthToken(response.token);
+          if (response.user) {
+            localStorage.setItem('user', JSON.stringify(response.user));
+          }
+        }
+        
+        setError('');
+        onSuccess?.();
+      } else {
+        if (response.code === 'EMAIL_NOT_VERIFIED') {
+          setError('Email chưa được xác thực. Vui lòng kiểm tra email và xác thực trước khi đăng nhập.');
+        } else {
+          setError(response.message || 'Đăng nhập thất bại');
+        }
+      }
+    } catch (error: any) {
+      setError(error.message || 'Có lỗi xảy ra khi đăng nhập');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -97,10 +129,17 @@ export default function LoginForm({ onSubmit, isLoading = false, error }: LoginF
               )}
             </Button>
 
-            <div className="text-center">
-              <a href="#" className="text-sm text-orange-500 hover:text-orange-600">
+            <div className="text-center space-y-2">
+              <a href="#" className="text-sm text-orange-500 hover:text-orange-600 block">
                 Quên mật khẩu?
               </a>
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Chưa có tài khoản? Đăng ký ngay
+              </button>
             </div>
           </form>
         </CardContent>

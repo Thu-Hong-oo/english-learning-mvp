@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { apiService } from '../services/api';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [otp, setOtp] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(location.state?.email || '');
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,17 +23,9 @@ const VerifyEmail: React.FC = () => {
     setMessage('Đang xác thực...');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ otp }),
-      });
+      const response = await apiService.verifyEmail({ otp });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.success) {
         setStatus('success');
         setMessage('Email đã được xác thực thành công! Bạn có thể đăng nhập ngay bây giờ.');
         
@@ -41,11 +35,11 @@ const VerifyEmail: React.FC = () => {
         }, 3000);
       } else {
         setStatus('error');
-        setMessage(data.message || 'Xác thực email thất bại');
+        setMessage(response.message || 'Xác thực email thất bại');
       }
-    } catch (error) {
+    } catch (error: any) {
       setStatus('error');
-      setMessage('Có lỗi xảy ra khi xác thực email');
+      setMessage(error.message || 'Có lỗi xảy ra khi xác thực email');
     }
   };
 
@@ -60,27 +54,19 @@ const VerifyEmail: React.FC = () => {
     setMessage('Đang gửi lại OTP...');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/send-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await apiService.sendVerification({ email });
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.success) {
         setStatus('success');
-        setMessage('OTP mới đã được gửi đến email của bạn!');
+        setMessage('OTP mới đã được gửi lại đến email của bạn!');
         setOtp(''); // Reset OTP input
       } else {
         setStatus('error');
-        setMessage(data.message || 'Gửi lại OTP thất bại');
+        setMessage(response.message || 'Gửi lại OTP thất bại');
       }
-    } catch (error) {
+    } catch (error: any) {
       setStatus('error');
-      setMessage('Có lỗi xảy ra khi gửi lại OTP');
+      setMessage(error.message || 'Có lỗi xảy ra khi gửi lại OTP');
     }
   };
 
@@ -102,6 +88,11 @@ const VerifyEmail: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
+              {location.state?.email && (
+                <p className="text-xs text-green-600 mt-1">
+                  ✓ Email đã được điền sẵn từ quá trình đăng ký
+                </p>
+              )}
             </div>
             
             <div>

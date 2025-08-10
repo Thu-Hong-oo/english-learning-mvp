@@ -1,50 +1,36 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 
 export default function AuthContainer() {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const handleLogin = async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // TODO: Implement login logic here
-      console.log('Login:', { email, password });
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Handle successful login
-      // Redirect or update state
-      
-    } catch (err: any) {
-      setError(err.message || 'Đăng nhập thất bại');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleLoginSuccess = () => {
+    // Redirect to dashboard or home page
+    console.log('Đăng nhập thành công!');
+    // window.location.href = '/dashboard';
   };
 
-  const handleRegister = async (name: string, email: string, password: string, confirmPassword: string) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // TODO: Implement register logic here
-      console.log('Register:', { name, email, password, confirmPassword });
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Handle successful registration
-      // Redirect or update state
-      
-    } catch (err: any) {
-      setError(err.message || 'Đăng ký thất bại');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRegisterSuccess = (email: string) => {
+    setShowSuccessMessage(true);
+    // Chuyển hướng đến trang xác thực email sau 2 giây
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+      navigate('/verify-email', { state: { email } });
+    }, 2000);
+  };
+
+  const handleSwitchToLogin = () => {
+    setIsLogin(true);
+    setShowSuccessMessage(false);
+  };
+
+  const handleSwitchToRegister = () => {
+    setIsLogin(false);
+    setShowSuccessMessage(false);
   };
 
   return (
@@ -78,17 +64,27 @@ export default function AuthContainer() {
           </div>
         </div>
 
-        {isLogin ? (
+        {showSuccessMessage ? (
+          <div className="text-center p-8">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
+              <div className="text-green-600 text-6xl mb-4">✓</div>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                Đăng ký thành công!
+              </h3>
+              <p className="text-green-600">
+                Vui lòng kiểm tra email và xác thực tài khoản. Bạn sẽ được chuyển đến trang xác thực email trong giây lát...
+              </p>
+            </div>
+          </div>
+        ) : isLogin ? (
           <LoginForm 
-            onSubmit={handleLogin}
-            isLoading={isLoading}
-            error={error??undefined}
+            onSuccess={handleLoginSuccess}
+            onSwitchToRegister={handleSwitchToRegister}
           />
         ) : (
           <RegisterForm 
-            onSubmit={handleRegister}
-            isLoading={isLoading}
-            error={error??undefined}
+            onSuccess={handleRegisterSuccess}
+            onSwitchToLogin={handleSwitchToLogin}
           />
         )}
       </div>

@@ -3,14 +3,15 @@ import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { apiService } from '../../../services/api';
+import type { RegisterRequest } from '../../../services/api';
 
 interface RegisterFormProps {
-  onSubmit: (name: string, email: string, password: string, confirmPassword: string) => void;
-  isLoading?: boolean;
-  error?: string;
+  onSuccess?: (email: string) => void; // callback when register successfully
+  onSwitchToLogin?: () => void;
 }
 
-export default function RegisterForm({ onSubmit, isLoading = false, error }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,13 +19,40 @@ export default function RegisterForm({ onSubmit, isLoading = false, error }: Reg
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
+      setError('Mật khẩu không khớp');
       return;
     }
-    onSubmit(name, email, password, confirmPassword);
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const registerData: RegisterRequest = {
+        username: name.toLowerCase().replace(/\s+/g, ''),
+        email,
+        password,
+        fullName: name
+      };
+      
+      const response = await apiService.register(registerData);
+
+      if (response.success) {
+        setError('');
+        onSuccess?.(email);
+      } else {
+        setError(response.message || 'Đăng ký thất bại');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Có lỗi xảy ra khi đăng ký');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isFormValid = name && email && password && confirmPassword && agreedToTerms && password === confirmPassword;
@@ -166,12 +194,13 @@ export default function RegisterForm({ onSubmit, isLoading = false, error }: Reg
             </Button>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Đã có tài khoản?{' '}
-                <a href="#" className="text-orange-500 hover:text-orange-600 font-medium">
-                  Đăng nhập ngay
-                </a>
-              </p>
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Đã có tài khoản? Đăng nhập ngay
+              </button>
             </div>
           </form>
         </CardContent>
