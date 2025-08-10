@@ -1,0 +1,302 @@
+### TEST API AUTHENTICATION - ENGLISH WEBSITE
+
+# ========================================
+# 1. TEST ĐĂNG KÝ USER
+# ========================================
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "test45viirrr",
+  "email": "thuhong05022003@gmail.com",
+  "password": "123456",
+  "fullName": "Test User 1",
+  "role": "student"
+}
+
+###
+
+###
+
+# Test đăng ký với thông tin thiếu (sẽ báo lỗi)
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser3",
+  "email": "test3@email.com"
+  // Thiếu password và fullName
+}
+
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "893069"
+}
+
+# ========================================
+# 2. TEST ĐĂNG NHẬP
+# ========================================\
+
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "thuhong05022003@gmail.com",
+  "password": "123456"
+}
+
+
+# Test đăng nhập với email không tồn tại
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@email.com",
+  "password": "123456"
+}
+
+# ========================================
+# 3. TEST XEM PROFILE (CẦN TOKEN)
+# ========================================
+# Lưu ý: Thay TOKEN_HERE bằng token thật từ login
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer TOKEN_HERE
+Content-Type: application/json
+
+###
+
+# Test xem profile không có token (sẽ báo lỗi)
+GET http://localhost:5000/api/auth/profile
+Content-Type: application/json
+
+###
+
+# Test xem profile với token sai
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer wrong-token-here
+Content-Type: application/json
+
+# ========================================
+# 4. TEST ĐĂNG XUẤT (CẦN TOKEN)
+# ========================================
+# Lưu ý: Thay TOKEN_HERE bằng token thật từ login
+POST http://localhost:5000/api/auth/logout
+Authorization: Bearer TOKEN_HERE
+Content-Type: application/json
+
+###
+
+# Test đăng xuất không có token (sẽ báo lỗi)
+POST http://localhost:5000/api/auth/logout
+Content-Type: application/json
+
+# ========================================
+# 5. TEST FLOW HOÀN CHỈNH
+# ========================================
+# Bước 1: Đăng ký user mới
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "email": "demo@email.com",
+  "password": "123456",
+  "fullName": "Demo User",
+  "role": "student"
+}
+
+###
+
+# Bước 2: Đăng nhập để lấy token
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@email.com",
+  "password": "123456"
+}
+
+###
+
+# Bước 3: Xem profile với token
+# Copy token từ response của login ở trên
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer PASTE_TOKEN_HERE
+Content-Type: application/json
+
+###
+
+# Bước 4: Đăng xuất
+POST http://localhost:5000/api/auth/logout
+Authorization: Bearer PASTE_TOKEN_HERE
+Content-Type: application/json
+
+# ========================================
+# 6. TEST VALIDATION
+# ========================================
+# Test email không hợp lệ
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "invalid_email",
+  "email": "invalid-email",
+  "password": "123456",
+  "fullName": "Invalid Email User"
+}
+
+###
+
+# Test password quá ngắn
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "short_password",
+  "email": "short@email.com",
+  "password": "123",
+  "fullName": "Short Password User"
+}
+
+###
+
+# Test username quá ngắn
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "email": "short@email.com",
+  "password": "123456",
+  "fullName": "Short Username User"
+}
+
+# ========================================
+# 7. TEST ROLE KHÁC NHAU
+# ========================================
+# Test đăng ký với role teacher
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "teacher_user",
+  "email": "teacher@email.com",
+  "password": "123456",
+  "fullName": "Teacher User",
+  "role": "teacher"
+}
+
+###
+
+# Test đăng ký với role admin
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin_user",
+  "email": "admin@email.com",
+  "password": "123456",
+  "fullName": "Admin User",
+  "role": "admin"
+}
+
+# ========================================
+# HƯỚNG DẪN SỬ DỤNG:
+# ========================================
+# 1. Cài extension "REST Client" trong VS Code
+# 2. Mở file này
+# 3. Click "Send Request" ở trên mỗi request
+# 4. Xem kết quả ở tab mới
+# 5. Copy token từ login để test profile/logout
+# 6. Sửa URL nếu server chạy ở port khác
+# 7. Sửa email/username để test nhiều trường hợp
+
+# ========================================
+# LƯU Ý QUAN TRỌNG:
+# ========================================
+# - Đảm bảo server đang chạy (npm run dev)
+# - Đảm bảo MongoDB đang chạy
+# - Thay TOKEN_HERE bằng token thật
+# - Test từng request một để dễ debug
+# - Xem response status và body để kiểm tra
+
+# ========================================
+# 8. TEST EMAIL VERIFICATION
+# ========================================
+# Test gửi email xác nhận
+POST http://localhost:5000/api/auth/send-verification
+Content-Type: application/json
+
+{
+  "email": "testuser45@example.com"
+}
+
+###
+
+# Test gửi lại email xác nhận
+POST http://localhost:5000/api/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "testuser45@example.com"
+}
+
+###
+
+# Test xác thực email với OTP (thay OTP_CODE bằng OTP thật)
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "893069"
+}
+
+###
+
+
+
+
+
+###
+
+# Bước 2: Thử đăng nhập (sẽ báo lỗi email chưa xác thực)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "verify@email.com",
+  "password": "123456"
+}
+
+###
+
+# Bước 3: Gửi lại email xác nhận nếu cần
+POST http://localhost:5000/api/auth/send-verification
+Content-Type: application/json
+
+{
+  "email": "verify@email.com"
+}
+
+###
+
+# Bước 4: Xác thực email với OTP (thay OTP_CODE bằng OTP thật)
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "otp": "843762"
+}
+
+###
+
+# Bước 5: Đăng nhập sau khi xác thực email
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "thuhong05022003@gmail.com",
+  "password": "123456"
+}

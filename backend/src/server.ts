@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes';
+import courseRoutes from './routes/courseRoutes';
 
 
 
@@ -15,9 +16,9 @@ const PORT = process.env.PORT || 3000;
 // Database connection
 const connectDB = async (): Promise<void> => {
     try {
-        const mongoUrl = process.env.MONGO_URL;
+        const mongoUrl = process.env.MONGO_URI;
         if (!mongoUrl) {
-            throw new Error('MONGO_URL environment variable is not defined');
+            throw new Error('MONGO_URI environment variable is not defined');
         }
         
         await mongoose.connect(mongoUrl);
@@ -38,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
 
 
 app.get('/', (req: Request, res: Response) => {
