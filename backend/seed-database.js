@@ -6,12 +6,12 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// User Schema
+// User Schema - Theo đúng schema trong ảnh
 const userSchema = new mongoose.Schema({
-    username: String,
-    email: String,
-    password: String,
-    fullName: String,
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    fullName: { type: String, required: true },
     role: { type: String, enum: ['student', 'teacher', 'admin'], default: 'student' },
     level: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
     points: { type: Number, default: 0 },
@@ -26,14 +26,18 @@ const userSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Course Schema
+// Course Schema - Theo đúng schema trong ảnh
 const courseSchema = new mongoose.Schema({
-    title: String,
-    description: String,
-    level: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
-    category: { type: String, enum: ['grammar', 'vocabulary', 'listening', 'speaking', 'reading', 'writing', 'general'] },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    isPublished: { type: Boolean, default: false },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    level: { type: String, enum: ['beginner', 'intermediate', 'advanced'], required: true },
+    category: { type: String, enum: ['grammar', 'vocabulary', 'listening', 'speaking', 'reading', 'writing', 'general'], required: true },
+    teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    thumbnail: String,
+    lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }],
+    requirements: [String],
+    objectives: [String],
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     tags: [String],
     difficulty: { type: Number, min: 1, max: 5 },
     rating: { type: Number, default: 0 },
@@ -44,64 +48,71 @@ const courseSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Lesson Schema
+// Lesson Schema - Theo đúng schema trong ảnh
 const lessonSchema = new mongoose.Schema({
-    title: String,
-    description: String,
-    content: String,
-    courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    content: { type: String, required: true },
+    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     order: { type: Number, default: 1 },
-    type: { type: String, enum: ['video', 'text', 'quiz', 'interactive'] },
+    type: { type: String, enum: ['video', 'text', 'quiz', 'interactive'], required: true },
+    thumbnail: String,
+    videoUrl: String,
     materials: [String],
     vocabulary: [String],
     grammarPoints: [String],
     exercises: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' }],
     isPublished: { type: Boolean, default: false },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Exercise Schema
+// Exercise Schema - Theo đúng schema trong ảnh
 const exerciseSchema = new mongoose.Schema({
-    title: String,
-    description: String,
-    type: { type: String, enum: ['multiple-choice', 'fill-blank', 'matching', 'true-false', 'essay'] },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    type: { type: String, enum: ['multiple-choice', 'fill-blank', 'matching', 'true-false', 'essay'], required: true },
     difficulty: { type: Number, min: 1, max: 5 },
     points: { type: Number, default: 10 },
     timeLimit: Number,
-    lessonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' },
-    courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
-    content: mongoose.Schema.Types.Mixed, // Questions and answers
-    blanks: [String],
-    matchingPairs: [[String]],
+    lesson: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson', required: true },
+    order: { type: Number, default: 1 },
+    questions: mongoose.Schema.Types.Mixed, // Questions and answers
+    passingScore: { type: Number, default: 70 },
     isPublished: { type: Boolean, default: false },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Comment Schema
+// Comment Schema - Theo đúng schema trong ảnh
 const commentSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    content: String,
-    contentType: { type: String, enum: ['course', 'lesson', 'exercise'] },
-    contentId: { type: mongoose.Schema.Types.ObjectId },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    content: { type: String, required: true },
+    contentType: { type: String, enum: ['course', 'lesson', 'exercise'], required: true },
+    contentId: { type: mongoose.Schema.Types.ObjectId, required: true },
     parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' },
     replies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     likes: { type: Number, default: 0 },
     dislikes: { type: Number, default: 0 },
     isApproved: { type: Boolean, default: true },
     isReported: { type: Boolean, default: false },
+    isEdited: { type: Boolean, default: false },
+    editedAt: Date,
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: Date,
     language: { type: String, default: 'en' },
     translation: String,
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Vocabulary Schema
+// Vocabulary Schema - Theo đúng schema trong ảnh
 const vocabularySchema = new mongoose.Schema({
-    word: String,
+    word: { type: String, required: true, unique: true },
     phonetic: String,
     partOfSpeech: String,
     definitions: [String],
@@ -124,9 +135,9 @@ const vocabularySchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
-// UserProgress Schema
+// UserProgress Schema - Theo đúng schema trong ảnh
 const userProgressSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
     lessonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' },
     exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
@@ -152,7 +163,7 @@ const Comment = mongoose.model('Comment', commentSchema);
 const Vocabulary = mongoose.model('Vocabulary', vocabularySchema);
 const UserProgress = mongoose.model('UserProgress', userProgressSchema);
 
-// Sample data
+// Sample data - Cập nhật theo schema mới
 const sampleUsers = [
     {
         username: 'teacher_john',
@@ -218,78 +229,96 @@ const sampleCourses = [
         description: 'Master the essential grammar rules and structures of English language. Perfect for beginners and intermediate learners.',
         level: 'beginner',
         category: 'grammar',
+        thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+        requirements: ['Basic English knowledge', 'Willingness to learn'],
+        objectives: ['Understand basic grammar rules', 'Build strong foundation', 'Improve writing skills'],
+        status: 'published',
         tags: ['grammar', 'beginner', 'foundation', 'rules'],
         difficulty: 1,
         rating: 4.5,
         totalStudents: 1250,
         price: 0,
-        lessonsCount: 12,
-        isPublished: true
+        lessonsCount: 12
     },
     {
         title: 'Advanced Vocabulary Builder',
         description: 'Expand your English vocabulary with advanced words, idioms, and expressions used in professional and academic contexts.',
         level: 'advanced',
         category: 'vocabulary',
+        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+        requirements: ['Intermediate English level', 'Basic vocabulary foundation'],
+        objectives: ['Master 500+ advanced words', 'Understand context usage', 'Improve communication skills'],
+        status: 'published',
         tags: ['vocabulary', 'advanced', 'idioms', 'professional'],
         difficulty: 4,
         rating: 4.8,
         totalStudents: 890,
         price: 29.99,
-        lessonsCount: 15,
-        isPublished: true
+        lessonsCount: 15
     },
     {
         title: 'Business English Communication',
         description: 'Learn professional English for business meetings, presentations, emails, and negotiations.',
         level: 'intermediate',
         category: 'speaking',
+        thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+        requirements: ['Intermediate English level', 'Business interest'],
+        objectives: ['Master business vocabulary', 'Improve presentation skills', 'Enhance negotiation abilities'],
+        status: 'published',
         tags: ['business', 'speaking', 'professional', 'communication'],
         difficulty: 3,
         rating: 4.6,
         totalStudents: 756,
         price: 39.99,
-        lessonsCount: 18,
-        isPublished: true
+        lessonsCount: 18
     },
     {
         title: 'IELTS Preparation Course',
         description: 'Comprehensive preparation for IELTS exam covering all four skills: reading, writing, listening, and speaking.',
         level: 'advanced',
         category: 'general',
+        thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop',
+        requirements: ['Upper-intermediate English level', 'Exam preparation mindset'],
+        objectives: ['Achieve target IELTS score', 'Master all four skills', 'Build exam confidence'],
+        status: 'published',
         tags: ['ielts', 'exam', 'preparation', 'academic'],
         difficulty: 5,
         rating: 4.9,
         totalStudents: 2100,
         price: 79.99,
-        lessonsCount: 24,
-        isPublished: true
+        lessonsCount: 24
     },
     {
         title: 'English Pronunciation Mastery',
         description: 'Improve your English pronunciation with detailed lessons on sounds, stress, intonation, and connected speech.',
         level: 'intermediate',
         category: 'speaking',
+        thumbnail: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&h=300&fit=crop',
+        requirements: ['Basic English knowledge', 'Access to audio equipment'],
+        objectives: ['Master English sounds', 'Improve stress patterns', 'Enhance speaking clarity'],
+        status: 'published',
         tags: ['pronunciation', 'speaking', 'sounds', 'intonation'],
         difficulty: 3,
         rating: 4.4,
         totalStudents: 634,
         price: 24.99,
-        lessonsCount: 14,
-        isPublished: true
+        lessonsCount: 14
     },
     {
         title: 'Academic Writing Skills',
         description: 'Develop academic writing skills for essays, research papers, and academic presentations.',
         level: 'advanced',
         category: 'writing',
+        thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop',
+        requirements: ['Advanced English level', 'Academic background'],
+        objectives: ['Master academic style', 'Improve research skills', 'Enhance writing clarity'],
+        status: 'published',
         tags: ['writing', 'academic', 'essays', 'research'],
         difficulty: 4,
         rating: 4.7,
         totalStudents: 445,
         price: 34.99,
-        lessonsCount: 16,
-        isPublished: true
+        lessonsCount: 16
     }
 ];
 
@@ -297,35 +326,39 @@ const sampleLessons = [
     {
         title: 'Introduction to Parts of Speech',
         description: 'Learn about nouns, verbs, adjectives, and other parts of speech in English.',
-        content: 'In this lesson, we will explore the fundamental building blocks of English sentences...',
+        content: 'In this lesson, we will explore the fundamental building blocks of English sentences. We will learn about nouns, verbs, adjectives, adverbs, pronouns, prepositions, conjunctions, and interjections. Understanding these parts of speech is crucial for building proper sentences and improving your English grammar.',
         order: 1,
         type: 'video',
-        materials: ['video-lesson.mp4', 'parts-of-speech-chart.pdf'],
+        thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
+        videoUrl: 'https://example.com/videos/parts-of-speech-intro.mp4',
+        materials: ['parts-of-speech-chart.pdf', 'practice-exercises.pdf'],
         vocabulary: ['noun', 'verb', 'adjective', 'adverb', 'pronoun'],
         grammarPoints: ['parts of speech', 'sentence structure'],
-        isPublished: true
+        status: 'published'
     },
     {
         title: 'Present Simple Tense',
         description: 'Master the present simple tense for describing habits, facts, and general truths.',
-        content: 'The present simple tense is used to express habits, facts, and general truths...',
+        content: 'The present simple tense is used to express habits, facts, and general truths. We use it to talk about routines, schedules, and things that are always true. In this lesson, you will learn how to form positive, negative, and question sentences using the present simple tense.',
         order: 2,
         type: 'interactive',
+        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
         materials: ['present-simple-exercises.pdf', 'practice-quiz.html'],
-        vocabulary: ['habit', 'fact', 'truth', 'routine'],
+        vocabulary: ['habit', 'fact', 'truth', 'routine', 'schedule'],
         grammarPoints: ['present simple', 'third person singular', 'verb conjugation'],
-        isPublished: true
+        status: 'published'
     },
     {
         title: 'Advanced Business Vocabulary',
         description: 'Learn essential business terms and expressions for professional communication.',
-        content: 'Business English requires specific vocabulary for various professional situations...',
+        content: 'Business English requires specific vocabulary for various professional situations. In this lesson, you will learn key business terms related to meetings, negotiations, presentations, and corporate communication. These terms will help you sound more professional in business contexts.',
         order: 1,
         type: 'text',
+        thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=200&fit=crop',
         materials: ['business-vocab-list.pdf', 'case-studies.pdf'],
         vocabulary: ['stakeholder', 'ROI', 'synergy', 'paradigm', 'leverage'],
         grammarPoints: ['formal language', 'business expressions'],
-        isPublished: true
+        status: 'published'
     }
 ];
 
@@ -337,7 +370,7 @@ const sampleExercises = [
         difficulty: 1,
         points: 10,
         timeLimit: 300,
-        content: {
+        questions: {
             questions: [
                 {
                     question: 'What part of speech is "quickly" in "She runs quickly"?',
@@ -351,7 +384,8 @@ const sampleExercises = [
                 }
             ]
         },
-        isPublished: true
+        passingScore: 70,
+        status: 'published'
     },
     {
         title: 'Present Simple Practice',
@@ -360,7 +394,7 @@ const sampleExercises = [
         difficulty: 2,
         points: 15,
         timeLimit: 600,
-        content: {
+        questions: {
             sentences: [
                 'She _____ (work) in a hospital.',
                 'They _____ (not/like) coffee.',
@@ -368,7 +402,8 @@ const sampleExercises = [
             ],
             answers: ['works', "don't like", 'studies']
         },
-        isPublished: true
+        passingScore: 80,
+        status: 'published'
     }
 ];
 
@@ -381,6 +416,8 @@ const sampleVocabulary = [
         level: 'advanced',
         category: 'literary',
         tags: ['chance', 'fortune', 'discovery'],
+        audioUrl: 'https://example.com/audio/serendipity.mp3',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
         synonyms: ['fortuitousness', 'chance', 'luck'],
         antonyms: ['misfortune', 'bad luck'],
         difficulty: 4,
@@ -394,6 +431,8 @@ const sampleVocabulary = [
         level: 'advanced',
         category: 'formal',
         tags: ['everywhere', 'omnipresent', 'widespread'],
+        audioUrl: 'https://example.com/audio/ubiquitous.mp3',
+        imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&h=200&fit=crop',
         synonyms: ['omnipresent', 'pervasive', 'universal'],
         antonyms: ['rare', 'scarce', 'limited'],
         difficulty: 4,
@@ -407,6 +446,8 @@ const sampleVocabulary = [
         level: 'intermediate',
         category: 'character',
         tags: ['strong', 'flexible', 'adaptable'],
+        audioUrl: 'https://example.com/audio/resilient.mp3',
+        imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=200&fit=crop',
         synonyms: ['flexible', 'adaptable', 'tough'],
         antonyms: ['fragile', 'weak', 'rigid'],
         difficulty: 3,
@@ -457,7 +498,7 @@ async function seedDatabase() {
         // Update courses with teacher IDs
         const coursesWithTeachers = sampleCourses.map((course, index) => ({
             ...course,
-            createdBy: teachers[index % teachers.length]._id
+            teacher: teachers[index % teachers.length]._id
         }));
 
         // Insert courses
@@ -467,8 +508,8 @@ async function seedDatabase() {
         // Update lessons with course IDs
         const lessonsWithCourses = sampleLessons.map((lesson, index) => ({
             ...lesson,
-            courseId: createdCourses[index % createdCourses.length]._id,
-            createdBy: teachers[index % teachers.length]._id
+            course: createdCourses[index % createdCourses.length]._id,
+            teacher: teachers[index % teachers.length]._id
         }));
 
         // Insert lessons
@@ -478,9 +519,8 @@ async function seedDatabase() {
         // Update exercises with lesson IDs
         const exercisesWithLessons = sampleExercises.map((exercise, index) => ({
             ...exercise,
-            lessonId: createdLessons[index % createdLessons.length]._id,
-            courseId: createdCourses[index % createdCourses.length]._id,
-            createdBy: teachers[index % teachers.length]._id
+            lesson: createdLessons[index % createdLessons.length]._id,
+            teacher: teachers[index % teachers.length]._id
         }));
 
         // Insert exercises
@@ -490,17 +530,20 @@ async function seedDatabase() {
         // Update lessons with exercise IDs
         for (let i = 0; i < createdLessons.length; i++) {
             const lesson = createdLessons[i];
-            const exercises = createdExercises.filter(ex => ex.lessonId.equals(lesson._id));
+            const exercises = createdExercises.filter(ex => ex.lesson.equals(lesson._id));
             await Lesson.findByIdAndUpdate(lesson._id, {
                 exercises: exercises.map(ex => ex._id)
             });
         }
 
-        // Update courses with lesson counts
+        // Update courses with lesson counts and lesson IDs
         for (let i = 0; i < createdCourses.length; i++) {
             const course = createdCourses[i];
-            const lessonCount = createdLessons.filter(lesson => lesson.courseId.equals(course._id)).length;
-            await Course.findByIdAndUpdate(course._id, { lessonsCount: lessonCount });
+            const courseLessons = createdLessons.filter(lesson => lesson.course.equals(course._id));
+            await Course.findByIdAndUpdate(course._id, { 
+                lessonsCount: courseLessons.length,
+                lessons: courseLessons.map(lesson => lesson._id)
+            });
         }
 
         // Insert vocabulary
@@ -514,7 +557,7 @@ async function seedDatabase() {
         // Insert comments
         const commentsWithUsers = sampleComments.map((comment, index) => ({
             ...comment,
-            userId: students[index % students.length]._id,
+            user: students[index % students.length]._id,
             contentId: createdCourses[index % createdCourses.length]._id
         }));
         const createdComments = await Comment.insertMany(commentsWithUsers);
@@ -549,7 +592,7 @@ async function seedDatabase() {
         // Display sample data
         console.log('\n📚 Sample Courses:');
         createdCourses.forEach(course => {
-            console.log(`- ${course.title} (${course.level} ${course.category}) - $${course.price}`);
+            console.log(`- ${course.title} (${course.level} ${course.category}) - $${course.price} - Status: ${course.status}`);
         });
 
         console.log('\n👥 Sample Users:');
