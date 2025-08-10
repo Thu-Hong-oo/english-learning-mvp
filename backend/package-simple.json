@@ -1,0 +1,29 @@
+{
+  "name": "backend-simple-test",
+  "version": "1.0.0",
+  "description": "Package đơn giản để test",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:simple": "jest simple-*.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.3.2",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["<rootDir>/tests/simple-setup.js"],
+    "testMatch": [
+      "**/simple-*.test.js"
+    ]
+  }
+}

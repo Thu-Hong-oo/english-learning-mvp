@@ -5,22 +5,42 @@ import bcrypt from 'bcrypt';
 export interface IUser extends Document {
     username: string;
     email: string;
-    password: string;
+    password?: string; // Optional for OAuth users
     fullName: string;
     role: 'student' | 'teacher' | 'admin';
     isActive: boolean;
+    
+    // OAuth fields
+    authProvider: 'local' | 'google' | 'facebook';
+    googleId?: string;
+    facebookId?: string;
+    avatar?: string;
+    
+    // Email verification
+    isEmailVerified: boolean;
+    emailVerificationToken?: string;
+    emailVerificationExpires?: Date;
+    
+    // Password reset
+    passwordResetToken?: string;
+    passwordResetExpires?: Date;
+    
     // Learning profile
     level: 'beginner' | 'intermediate' | 'advanced';
     points: number;
     streak: number; // consecutive days of learning
     totalStudyTime: number; // in minutes
     preferredTopics: string[];
-    avatar?: string;
+    
     // Timestamps
     createdAt: Date;
     lastLogin: Date;
     lastStudyDate: Date;
+    
+    // Methods
     comparePassword(candidatePassword: string): Promise<boolean>;
+    generateEmailVerificationToken(): string;
+    generatePasswordResetToken(): string;
     toJSON(): any;
 }
 
@@ -44,7 +64,9 @@ const userSchema = new Schema<IUser>({
     },
     password: {
         type: String,
-        required: true,
+        required: function() {
+            return this.authProvider === 'local';
+        },
         minlength: 6
     },
     fullName: {
@@ -61,6 +83,29 @@ const userSchema = new Schema<IUser>({
         type: Boolean,
         default: true
     },
+    
+    // OAuth fields
+    authProvider: {
+        type: String,
+        enum: ['local', 'google', 'facebook'],
+        default: 'local'
+    },
+    googleId: String,
+    facebookId: String,
+    avatar: String,
+    
+    // Email verification
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
+    
+    // Password reset
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    
     // Learning profile
     level: {
         type: String,
@@ -83,10 +128,7 @@ const userSchema = new Schema<IUser>({
         type: String,
         enum: ['grammar', 'vocabulary', 'listening', 'speaking', 'reading', 'writing']
     }],
-    avatar: {
-        type: String,
-        default: null
-    },
+    
     // Timestamps
     createdAt: {
         type: Date,
@@ -104,13 +146,21 @@ const userSchema = new Schema<IUser>({
     timestamps: true
 });
 
-// Hash password before saving
+// Indexes
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ googleId: 1 });
+userSchema.index({ facebookId: 1 });
+userSchema.index({ emailVerificationToken: 1 });
+userSchema.index({ passwordResetToken: 1 });
+
+// Hash password before saving (only for local auth)
 userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password') || this.authProvider !== 'local') return next();
 
     try {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
+        this.password = await bcrypt.hash(this.password!, salt);
         next();
     } catch (error) {
         next(error as Error);
@@ -119,13 +169,34 @@ userSchema.pre('save', async function(next) {
 
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+    if (!this.password) return false;
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to get user without password
+// Generate email verification token
+userSchema.methods.generateEmailVerificationToken = function(): string {
+    const token = require('crypto').randomBytes(32).toString('hex');
+    this.emailVerificationToken = token;
+    this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    return token;
+};
+
+// Generate password reset token
+userSchema.methods.generatePasswordResetToken = function(): string {
+    const token = require('crypto').randomBytes(32).toString('hex');
+    this.passwordResetToken = token;
+    this.passwordResetExpires = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+    return token;
+};
+
+// Method to get user without sensitive data
 userSchema.methods.toJSON = function() {
     const user = this.toObject();
     delete user.password;
+    delete user.emailVerificationToken;
+    delete user.emailVerificationExpires;
+    delete user.passwordResetToken;
+    delete user.passwordResetExpires;
     return user;
 };
 

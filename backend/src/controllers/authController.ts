@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User, { IUser } from '../models/User';
+import { sendVerificationEmail, sendWelcomeEmail } from '../services/emailService';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -178,6 +180,165 @@ export const logout = async (req: AuthRequest, res: Response): Promise<void> => 
         });
     } catch (error) {
         console.error('Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+
+// Send email verification
+export const sendVerification = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            });
+            return;
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+            return;
+        }
+
+        if (user.isEmailVerified) {
+            res.status(400).json({
+                success: false,
+                message: 'Email already verified'
+            });
+            return;
+        }
+
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        user.emailVerificationToken = verificationToken;
+        user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        await user.save();
+
+        // Send verification email
+        await sendVerificationEmail(user.email, user.username, verificationToken);
+
+        res.json({
+            success: true,
+            message: 'Verification email sent successfully'
+        });
+
+    } catch (error) {
+        console.error('Send verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+
+// Verify email
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token } = req.params;
+
+        const user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpires: { $gt: new Date() }
+        });
+
+        if (!user) {
+            res.status(400).json({
+                success: false,
+                message: 'Invalid or expired verification token'
+            });
+            return;
+        }
+
+        // Mark email as verified
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save();
+
+        // Send welcome email
+        await sendWelcomeEmail(user.email, user.username);
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully'
+        });
+
+    } catch (error) {
+        console.error('Verify email error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    }
+};
+
+// Resend verification email
+export const resendVerification = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            res.status(400).json({
+                success: false,
+                message: 'Email is required'
+            });
+            return;
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+            return;
+        }
+
+        if (user.isEmailVerified) {
+            res.status(400).json({
+                success: false,
+                message: 'Email already verified'
+            });
+            return;
+        }
+
+        // Check if previous token is still valid
+        if (user.emailVerificationExpires && user.emailVerificationExpires > new Date()) {
+            res.status(400).json({
+                success: false,
+                message: 'Please wait before requesting another verification email'
+            });
+            return;
+        }
+
+        // Generate new verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        user.emailVerificationToken = verificationToken;
+        user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        await user.save();
+
+        // Send verification email
+        await sendVerificationEmail(user.email, user.username, verificationToken);
+
+        res.json({
+            success: true,
+            message: 'Verification email resent successfully'
+        });
+
+    } catch (error) {
+        console.error('Resend verification error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error',
