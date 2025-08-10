@@ -1,16 +1,18 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
+import courseReducer from './slices/courseSlice';
 
-// Cấu hình Redux store
+// 1. Tạo store với configurestore
 export const store = configureStore({
-  // Kết hợp tất cả reducers
+  // 2.Kết hợp tất cả reducers
   reducer: {
     auth: authReducer,    // Quản lý authentication state
     user: userReducer,    // Quản lý user profile và settings
+    courses: courseReducer, // Quản lý courses data
   },
   
-  // Cấu hình middleware (Redux Toolkit tự động thêm thunk middleware)
+  // 3.Cấu hình middleware (Redux Toolkit tự động thêm thunk middleware)
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       // Tắt serializable check cho một số actions (nếu cần)

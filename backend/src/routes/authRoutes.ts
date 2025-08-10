@@ -1,25 +1,29 @@
-import { Router } from 'express';
+import express from 'express';
 import { 
     register, 
     login, 
-    getProfile, 
-    logout, 
-    sendVerification, 
     verifyEmail, 
-    resendVerification 
+    resendVerification, 
+    googleAuth, 
+    googleCallback, 
+    googleAuthAPI,
+    getProfile,
+    logout
 } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-// Public routes
+// Regular auth routes
 router.post('/register', register);
 router.post('/login', login);
-
-// Email verification routes
-router.post('/send-verification', sendVerification);
 router.post('/verify-email', verifyEmail);
-router.post('/resend-verification', resendVerification);
+router.post('/resend-otp', resendVerification);
+
+// Google OAuth routes
+router.get('/google', googleAuth); // Lấy Google auth URL
+router.get('/google/callback', googleCallback); // Callback từ Google (redirect)
+router.post('/google', googleAuthAPI); // API endpoint (không redirect)
 
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);

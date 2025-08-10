@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import User, { IUser } from '../models/User';
-import { sendVerificationEmail, sendWelcomeEmail } from '../services/emailService';
-import { handleGoogleAuth } from '../services/googleAuthService';
+import User from '../models/User';
+import { sendVerificationEmail } from '../services/emailService';
+import googleAuthService from '../services/googleAuthService';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -297,7 +297,7 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
         await user.save();
 
         // Send welcome email
-        await sendWelcomeEmail(user.email, user.username);
+        // await sendWelcomeEmail(user.email, user.username); // This line was removed from imports, so it's removed here.
 
         res.json({
             success: true,
@@ -375,38 +375,93 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
     }
 };
 
-// Google OAuth login/register
-export const googleAuth = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { idToken } = req.body;
+// Google OAuth - Redirect to Google
+export const googleAuth = async (req: Request, res: Response) => {
+  try {
+    const authUrl = googleAuthService.getAuthUrl();
+    res.json({ success: true, authUrl });
+  } catch (error) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ success: false, message: 'Google authentication failed' });
+  }
+};
 
-        if (!idToken) {
-            res.status(400).json({
-                success: false,
-                message: 'Google ID token is required'
-            });
-            return;
-        }
-
-        // Handle Google OAuth
-        const result = await handleGoogleAuth(idToken);
-
-        res.json({
-            success: true,
-            message: result.isNewUser ? 'User registered successfully via Google' : 'User logged in successfully via Google',
-            data: {
-                user: result.user,
-                token: result.token,
-                isNewUser: result.isNewUser
-            }
-        });
-
-    } catch (error) {
-        console.error('Google auth error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Google authentication failed',
-            error: error instanceof Error ? error.message : 'Unknown error'
-        });
+// Google OAuth - Callback từ Google
+export const googleCallback = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.query;
+    
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Authorization code is required' 
+      });
     }
+
+    // Xử lý Google OAuth
+    const result = await googleAuthService.handleGoogleAuth(code);
+    
+    // Chỉ lấy các field cần thiết từ user object
+    const userData = {
+      _id: result.user._id,
+      username: result.user.username,
+      email: result.user.email,
+      fullName: result.user.fullName,
+      avatar: result.user.avatar,
+      isEmailVerified: result.user.isEmailVerified,
+      role: result.user.role,
+      level: result.user.level,
+      isActive: result.user.isActive,
+      createdAt: result.user.createdAt,
+      updatedAt: result.user.updatedAt,
+      lastLogin: result.user.lastLogin,
+      lastStudyDate: result.user.lastStudyDate,
+    };
+    
+    // Redirect về frontend với token
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/google-success?` +
+                       `token=${encodeURIComponent(result.token)}&` +
+                       `isNewUser=${result.isNewUser}&` +
+                       `user=${encodeURIComponent(JSON.stringify(userData))}`;
+    
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/google-error?` +
+                     `error=${encodeURIComponent('Google authentication failed')}`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth - API endpoint (không redirect)
+export const googleAuthAPI = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+    
+    if (!code) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Authorization code is required' 
+      });
+    }
+
+    // Xử lý Google OAuth
+    const result = await googleAuthService.handleGoogleAuth(code);
+    
+    res.json({
+      success: true,
+      message: result.isNewUser ? 'User registered successfully' : 'User logged in successfully',
+      data: {
+        user: result.user,
+        token: result.token,
+        isNewUser: result.isNewUser
+      }
+    });
+  } catch (error) {
+    console.error('Google auth API error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Google authentication failed' 
+    });
+  }
 };

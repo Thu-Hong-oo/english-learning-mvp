@@ -3,14 +3,19 @@ import { apiService } from '../../services/api';
 
 // Định nghĩa kiểu dữ liệu cho User
 export interface User {
-  id: string;
+  _id: string; // MongoDB uses _id
   username: string;
   email: string;
   fullName: string;
   avatar?: string;
   isEmailVerified: boolean;
+  role: 'student' | 'teacher' | 'admin';
+  level: 'beginner' | 'intermediate' | 'advanced';
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  lastLogin: string;
+  lastStudyDate: string;
 }
 
 // Định nghĩa kiểu dữ liệu cho Auth State
@@ -176,6 +181,26 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
 
+    // Action xử lý Google OAuth thành công
+    googleAuthSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+      console.log('googleAuthSuccess reducer called with:', action.payload);
+      
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      state.error = null;
+      state.loading = false;
+      
+      console.log('Updated state:', {
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        token: state.token
+      });
+      
+      // Set token cho apiService
+      apiService.setAuthToken(action.payload.token);
+    },
+
     // Action khởi tạo auth từ localStorage (khi app khởi động)
     initializeAuth: (state) => {
       const token = localStorage.getItem('token');
@@ -277,7 +302,7 @@ const authSlice = createSlice({
 });
 
 // Export actions
-export const { logout, clearError, setLoading, initializeAuth } = authSlice.actions;
+export const { logout, clearError, setLoading, initializeAuth, googleAuthSuccess } = authSlice.actions;
 
 // Export selectors (để lấy state từ component)
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;

@@ -15,6 +15,9 @@ const Header = () => {
   const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);
   const navigate = useNavigate();
 
+  // Debug logging
+  console.log('Header - Current Redux state:', { user, isAuthenticated });
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };

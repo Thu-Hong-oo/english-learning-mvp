@@ -3,63 +3,55 @@ import { Routes, Route } from 'react-router-dom'
 import { useAppDispatch } from './store/hooks'
 import { initializeAuth } from './store/slices/authSlice'
 import { initializeUserData } from './store/slices/userSlice'
-
-// Import components
+import { fetchFeaturedCourses } from './store/slices/courseSlice'
 import Header from './components/layout/Header'
 import HeroSection from './components/layout/HeroSection'
-import TopCategories from './components/layout/Top-Category'
-import FeaturedCourses from './components/layout/FeatureCourse'
-import LearnPressAddOns from './components/layout/LearnPressAddOns'
+import FeatureCourse from './components/layout/FeatureCourse'
+// import TopCategory from './components/layout/TopCategory'
 import Statistics from './components/layout/Statistics'
 import StudentFeedback from './components/layout/StudentFeedback'
 import LatestArticle from './components/layout/LatestArticle'
+import LearnPressAddOns from './components/layout/LearnPressAddOns'
+import CallToAction from './components/layout/CallToAction'
 import Footer from './components/layout/Footer'
 import LoginAndRegister from './pages/LoginAndRegisterPage'
 import VerifyEmail from './pages/VerifyEmail'
-import ReduxDevTools from './components/ReduxDevTools'
+import GoogleAuthSuccess from './pages/GoogleAuthSuccess'
+import GoogleAuthError from './pages/GoogleAuthError'
+
 
 export default function App() {
   const dispatch = useAppDispatch();
 
-  // Khởi tạo Redux state từ localStorage khi app khởi động
   useEffect(() => {
-    // Khởi tạo authentication state
     dispatch(initializeAuth());
-    
-    // Khởi tạo user data
     dispatch(initializeUserData());
+    dispatch(fetchFeaturedCourses());
   }, [dispatch]);
 
   return (
     <>
       <Routes>
-        {/* Trang chủ */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <HeroSection />
-              <TopCategories />
-              <FeaturedCourses />
-              <LearnPressAddOns />
-              <Statistics />
-              <StudentFeedback />
-              <LatestArticle />
-              <Footer />
-            </>
-          }
-        />
-        
-        {/* Trang đăng nhập/đăng ký */}
+        <Route path="/" element={
+          <>
+            <Header />
+            <HeroSection />
+            <FeatureCourse />
+            {/* <TopCategory /> */}
+            <Statistics />
+            <StudentFeedback />
+            <LatestArticle />
+            <LearnPressAddOns />
+            <CallToAction />
+            <Footer />
+          </>
+        } />
         <Route path="/login" element={<LoginAndRegister />} />
-        
-        {/* Trang xác thực email */}
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/auth/google-success" element={<GoogleAuthSuccess />} />
+        <Route path="/auth/google-error" element={<GoogleAuthError />} />
       </Routes>
-      
-      {/* Redux DevTools - chỉ hiển thị trong development */}
-      <ReduxDevTools />
+     
     </>
   )
 }

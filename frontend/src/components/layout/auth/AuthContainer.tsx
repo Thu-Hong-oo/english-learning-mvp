@@ -46,34 +46,11 @@ export default function AuthContainer() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-2">
-        {/* Tab buttons */}
-        <div className='flex justify-end mb-2'>
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`px-6 py-2 rounded-md transition-colors ${
-              isLogin 
-                ? 'bg-orange-500 text-white' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Đăng nhập
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`px-6 py-2 rounded-md transition-colors ${
-              !isLogin 
-                ? 'bg-orange-500 text-white' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Đăng ký
-          </button>
-        </div>
         
         {/* Logo area */}
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-lg p-1 shadow-lg">
-            <img src="/LOGO.png" alt="Logo" className="h-12 w-auto" />
+            <img src="/LOGO.png" alt="Logo" className="h-10 w-auto" />
           </div>
         </div>
 

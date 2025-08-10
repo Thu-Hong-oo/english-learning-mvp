@@ -10,6 +10,8 @@ const API_ENDPOINTS = {
     VERIFY_EMAIL: '/api/auth/verify-email',
     SEND_VERIFICATION: '/api/auth/send-verification',
     RESEND_VERIFICATION: '/api/auth/resend-verification',
+    GOOGLE: '/api/auth/google',
+    GOOGLE_CALLBACK: '/api/auth/google/callback',
   },
   USER: {
     PROFILE: '/api/user/profile',
@@ -39,6 +41,7 @@ export interface ApiResponse<T = any> {
   token?: string;
   user?: any;
   code?: string;
+  authUrl?: string; // For Google OAuth
 }
 
 export interface LoginRequest {
@@ -146,6 +149,20 @@ class ApiService {
     return this.request(API_ENDPOINTS.AUTH.RESEND_VERIFICATION, {
       method: HTTP_METHODS.POST,
       body: JSON.stringify(data),
+    });
+  }
+
+  // Google OAuth Methods
+  async getGoogleAuthUrl(): Promise<ApiResponse> {
+    return this.request(API_ENDPOINTS.AUTH.GOOGLE, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  async handleGoogleAuth(code: string): Promise<ApiResponse> {
+    return this.request(API_ENDPOINTS.AUTH.GOOGLE, {
+      method: HTTP_METHODS.POST,
+      body: JSON.stringify({ code }),
     });
   }
 

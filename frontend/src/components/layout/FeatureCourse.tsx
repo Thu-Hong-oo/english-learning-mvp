@@ -1,78 +1,63 @@
+import { useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Card, CardContent, } from '../ui/card'
 import { Clock, Users, Star } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { fetchFeaturedCourses } from '../../store/slices/courseSlice'
 
 
-const courses = [
-  {
-    id: 1,
-    title: 'Create An LMS Website With LearnPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: 'Free',
-    originalPrice: '$29.0',
-    image: '/placeholder-drznq.png'
-  },
-  {
-    id: 2,
-    title: 'Design A Website With ThimPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: '$49.0',
-    originalPrice: '$59.0',
-    image: '/website-design-course.png'
-  },
-  {
-    id: 3,
-    title: 'Create An LMS Website With LearnPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: 'Free',
-    originalPrice: '$29.0',
-    image: '/online-learning-platform.png'
-  },
-  {
-    id: 4,
-    title: 'Create An LMS Website With LearnPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: 'Free',
-    originalPrice: '$29.0',
-    image: '/photography-course.png'
-  },
-  {
-    id: 5,
-    title: 'Create An LMS Website With LearnPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: 'Free',
-    originalPrice: '$29.0',
-    image: '/web-development-course.png'
-  },
-  {
-    id: 6,
-    title: 'Create An LMS Website With LearnPress',
-    instructor: 'Determined-Poitras',
-    category: 'Photography',
-    weeks: 2,
-    students: 156,
-    price: 'Free',
-    originalPrice: '$29.0',
-    image: '/online-education-course.png'
+// Helper function to format price
+const formatPrice = (price: number): string => {
+  if (price === 0) return 'Free';
+  return `$${price.toFixed(2)}`;
+};
+
+// Helper function to format duration
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0) {
+    return `${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
   }
-]
+  return `${mins}m`;
+};
 
 export default function FeaturedCourses() {
+  const dispatch = useAppDispatch();
+  const { featuredCourses, loading, error } = useAppSelector((state) => state.courses);
+
+  // Fetch featured courses when component mounts
+  useEffect(() => {
+    dispatch(fetchFeaturedCourses());
+  }, [dispatch]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading courses...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-20">
+          <div className="text-center text-red-600">
+            <p>Error loading courses: {error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-20">
@@ -86,51 +71,57 @@ export default function FeaturedCourses() {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="relative">
-                <img
-                  
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-gray-900 text-white px-3 py-1 rounded text-sm">
-                    {course.category}
-                  </span>
-                </div>
-              </div>
-              <CardContent className="p-6">
-                <div className="mb-2">
-                  <span className="text-sm text-gray-500">by {course.instructor}</span>
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-4 line-clamp-2">
-                  {course.title}
-                </h3>
-                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-4 h-4" />
-                    <span>{course.weeks}Weeks</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Users className="w-4 h-4" />
-                    <span>{course.students} Students</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-orange-500">{course.price}</span>
-                    {course.originalPrice && (
-                      <span className="text-sm text-gray-400 line-through">{course.originalPrice}</span>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm">
-                    View More
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 {featuredCourses.map((course) => (
+                   <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                     <div className="relative">
+                       <img
+                         src={course.thumbnail || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop'}
+                         alt={course.title}
+                         className="w-full h-48 object-cover"
+                       />
+                       <div className="absolute top-4 left-4">
+                         <span className="bg-gray-900 text-white px-3 py-1 rounded text-sm">
+                           {course.category}
+                         </span>
+                       </div>
+                     </div>
+                     <CardContent className="p-6">
+                       <div className="mb-2">
+                         <span className="text-sm text-gray-500">Level: {course.level}</span>
+                       </div>
+                       <h3 className="font-semibold text-gray-900 mb-4 line-clamp-2">
+                         {course.title}
+                       </h3>
+                       <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                         {course.description}
+                       </p>
+                       <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                         <div className="flex items-center space-x-1">
+                           <Clock className="w-4 h-4" />
+                           <span>{course.lessonsCount} Lessons</span>
+                         </div>
+                         <div className="flex items-center space-x-1">
+                           <Users className="w-4 h-4" />
+                           <span>{course.totalStudents} Students</span>
+                         </div>
+                         <div className="flex items-center space-x-1">
+                           <Star className="w-4 h-4 text-yellow-500" />
+                           <span>{course.rating.toFixed(1)}</span>
+                         </div>
+                       </div>
+                       <div className="flex justify-between items-center">
+                         <div className="flex items-center space-x-2">
+                           <span className="text-lg font-bold text-orange-500">{formatPrice(course.price)}</span>
+                         </div>
+                         <Button variant="outline" size="sm">
+                           View More
+                         </Button>
+                       </div>
+                     </CardContent>
+                   </Card>
+                 ))}
+               </div>
       </div>
     </section>
   )
