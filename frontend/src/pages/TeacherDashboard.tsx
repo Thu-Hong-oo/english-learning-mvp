@@ -32,6 +32,10 @@ interface Course {
   category: string
   level: string
   status: 'draft' | 'published' | 'archived'
+  adminApproval: 'pending' | 'approved' | 'rejected'
+  adminApprovedBy?: string
+  adminApprovedAt?: string
+  adminRejectionReason?: string
   enrolledStudents: number
   rating: number
   createdAt: string
@@ -266,9 +270,26 @@ export default function TeacherDashboard() {
                         <p className="text-sm text-gray-600">{course.category}</p>
                       </div>
                       <div className="text-right">
-                        <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
-                          {course.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
-                        </Badge>
+                        <div className="flex flex-col items-end space-y-1">
+                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                            {course.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+                          </Badge>
+                          {course.adminApproval === 'pending' && (
+                            <Badge variant="outline" className="text-orange-600 border-orange-600">
+                              Chờ duyệt
+                            </Badge>
+                          )}
+                          {course.adminApproval === 'rejected' && (
+                            <Badge variant="destructive">
+                              Bị từ chối
+                            </Badge>
+                          )}
+                          {course.adminApproval === 'approved' && course.status === 'draft' && (
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                              Đã duyệt
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 mt-1">{course.enrolledStudents} học viên</p>
                       </div>
                     </div>

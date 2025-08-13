@@ -59,6 +59,7 @@ export default function App() {
         <Route path="/auth/google-success" element={<GoogleAuthSuccess />} />
         <Route path="/auth/google-error" element={<GoogleAuthError />} />
         <Route path="/course" element={<><Header /><CoursePage /><Footer /></>} />
+        <Route path="/course/:id" element={<><Header /><CoursePage /><Footer /></>} />
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
         <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
         <Route path="/admin" element={

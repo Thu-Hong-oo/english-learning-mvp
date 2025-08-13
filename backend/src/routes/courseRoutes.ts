@@ -7,7 +7,10 @@ import {
   updateCourse, 
   deleteCourse,
   getTeacherCourses,
-  toggleCourseStatus
+  toggleCourseStatus,
+  adminApproveCourse,
+  getPendingCourses,
+  getAllCoursesForAdmin
 } from '../controllers/courseController'
 import { authenticateToken, authorizeRole } from '../middleware/auth'
 
@@ -28,5 +31,10 @@ router.post('/', authorizeRole(['teacher']), createCourse)
 router.put('/:id', authorizeRole(['teacher']), updateCourse)
 router.delete('/:id', authorizeRole(['teacher']), deleteCourse)
 router.patch('/:id/status', authorizeRole(['teacher']), toggleCourseStatus)
+
+// Admin routes (must be before /:id to avoid conflict)
+router.get('/admin/all', authorizeRole(['admin']), getAllCoursesForAdmin)
+router.get('/pending', authorizeRole(['admin']), getPendingCourses)
+router.patch('/:id/admin-approval', authorizeRole(['admin']), adminApproveCourse)
 
 export default router

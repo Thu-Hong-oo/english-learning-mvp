@@ -36,7 +36,12 @@ interface Course {
   _id: string
   title: string
   description: string
+  category: string
   status: 'draft' | 'published' | 'archived'
+  adminApproval: 'pending' | 'approved' | 'rejected'
+  adminApprovedBy?: string
+  adminApprovedAt?: string
+  adminRejectionReason?: string
   teacher: {
     username: string
     fullName: string
@@ -68,7 +73,7 @@ export default function AdminDashboard() {
 
       const [appsRes, coursesRes] = await Promise.all([
         fetch('http://localhost:3000/api/admin/instructor-applications', { headers }),
-        fetch('http://localhost:3000/api/courses', { headers })
+        fetch('http://localhost:3000/api/courses/admin/all', { headers })
       ])
       
       const appsData = await appsRes.json()
@@ -123,11 +128,42 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleCourseApproval = async (id: string, action: 'approve' | 'reject', reason?: string) => {
+    try {
+      let rejectionReason = reason;
+      
+      if (action === 'reject' && !reason) {
+        rejectionReason = prompt('Nhập lý do từ chối khóa học:') || 'Không có lý do';
+      }
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/courses/${id}/admin-approval`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
+        body: JSON.stringify({ action, reason: rejectionReason })
+      })
+      
+      if (response.ok) {
+        alert(`Khóa học đã được ${action === 'approve' ? 'duyệt' : 'từ chối'} thành công!`)
+        fetchData() // Refresh data
+      } else {
+        const errorData = await response.json()
+        alert(`Lỗi: ${errorData.message}`)
+      }
+    } catch (error) {
+      console.error('Error approving course:', error)
+      alert('Có lỗi xảy ra khi duyệt khóa học')
+    }
+  }
+
   const handleCourseStatus = async (id: string, status: 'draft' | 'published' | 'archived') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/admin/courses/${id}/status`, {
-        method: 'POST',
+      const response = await fetch(`http://localhost:3000/api/courses/${id}/status`, {
+        method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` })
@@ -136,16 +172,22 @@ export default function AdminDashboard() {
       })
       
       if (response.ok) {
+        alert(`Khóa học đã được cập nhật trạng thái thành ${status === 'published' ? 'xuất bản' : status === 'archived' ? 'lưu trữ' : 'bản nháp'}!`)
         fetchData() // Refresh data
+      } else {
+        const errorData = await response.json()
+        alert(`Lỗi: ${errorData.message}`)
       }
     } catch (error) {
       console.error('Error updating course status:', error)
+      alert('Có lỗi xảy ra khi cập nhật trạng thái khóa học')
     }
   }
 
   const pendingApplications = (applications || []).filter(app => app.status === 'pending')
-  const publishedCourses = (courses || []).filter(course => course.status === 'published')
-  const draftCourses = (courses || []).filter(course => course.status === 'draft')
+  const pendingCourses = (courses || []).filter(course => course.adminApproval === 'pending')
+  const approvedCourses = (courses || []).filter(course => course.adminApproval === 'approved')
+  const rejectedCourses = (courses || []).filter(course => course.adminApproval === 'rejected')
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -221,22 +263,22 @@ export default function AdminDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Khóa học đã xuất bản</CardTitle>
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Khóa học chờ duyệt</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{publishedCourses.length}</div>
-                  <p className="text-xs text-muted-foreground">Khóa học đang hoạt động</p>
+                  <div className="text-2xl font-bold">{pendingCourses.length}</div>
+                  <p className="text-xs text-muted-foreground">Chờ admin duyệt</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Khóa học nháp</CardTitle>
-                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Khóa học đã duyệt</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{draftCourses.length}</div>
+                  <div className="text-2xl font-bold">{approvedCourses.length}</div>
                   <p className="text-xs text-muted-foreground">Chờ duyệt xuất bản</p>
                 </CardContent>
               </Card>
@@ -380,10 +422,16 @@ export default function AdminDashboard() {
                     <div key={course._id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="font-semibold">{course.title}</h3>
+                          <h3 className="font-semibold cursor-pointer hover:text-blue-600" 
+                              onClick={() => window.open(`/course/${course._id}`, '_blank')}>
+                            {course.title}
+                          </h3>
                           <p className="text-sm text-gray-500">Giảng viên: {course.teacher?.fullName || 'N/A'}</p>
                         </div>
-                        {getStatusBadge(course.status)}
+                        <div className="flex flex-col items-end gap-2">
+                          {getStatusBadge(course.status)}
+                          {getStatusBadge(course.adminApproval)}
+                        </div>
                       </div>
                       
                       <p className="text-sm text-gray-600 mb-3">{course.description}</p>
@@ -391,11 +439,40 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                         <span>Học viên: {course.totalStudents}</span>
                         <span>Đánh giá: {course.rating.toFixed(1)}/5</span>
+                        <span>Danh mục: {course.category}</span>
                         <span>Ngày tạo: {new Date(course.createdAt).toLocaleDateString('vi-VN')}</span>
                       </div>
                       
                       <div className="flex gap-2">
-                        {course.status === 'draft' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(`/course/${course._id}`, '_blank')}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Xem chi tiết
+                        </Button>
+                        {course.adminApproval === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleCourseApproval(course._id, 'approve')}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Duyệt
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCourseApproval(course._id, 'reject')}
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              Từ chối
+                            </Button>
+                          </>
+                        )}
+                        {course.adminApproval === 'approved' && course.status === 'draft' && (
                           <Button
                             size="sm"
                             onClick={() => handleCourseStatus(course._id, 'published')}
@@ -464,12 +541,12 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <span>Đã xuất bản</span>
-                      <span className="font-semibold text-green-600">{publishedCourses.length}</span>
+                      <span>Chờ duyệt</span>
+                      <span className="font-semibold text-yellow-600">{pendingCourses.length}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Nháp</span>
-                      <span className="font-semibold text-yellow-600">{draftCourses.length}</span>
+                      <span>Đã duyệt</span>
+                      <span className="font-semibold text-green-600">{approvedCourses.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Đã lưu trữ</span>

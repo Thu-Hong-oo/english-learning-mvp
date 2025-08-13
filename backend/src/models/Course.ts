@@ -20,6 +20,10 @@ export interface ICourse extends Document {
     requirements?: string[];
     objectives?: string[];
     status: 'draft' | 'published' | 'archived';
+    adminApproval: 'pending' | 'approved' | 'rejected';
+    adminApprovedBy?: mongoose.Types.ObjectId;
+    adminApprovedAt?: Date;
+    adminRejectionReason?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -114,6 +118,25 @@ const courseSchema = new Schema<ICourse>({
         type: String,
         enum: ['draft', 'published', 'archived'],
         default: 'draft'
+    },
+    adminApproval: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    adminApprovedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    adminApprovedAt: {
+        type: Date,
+        default: null
+    },
+    adminRejectionReason: {
+        type: String,
+        maxlength: 500,
+        default: null
     }
 }, {
     timestamps: true

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import Course from '../models/Course'
 import { AuthRequest } from '../middleware/auth'
 
@@ -221,7 +222,7 @@ export const getTeacherCourses = async (req: AuthRequest, res: Response) => {
   }
 }
 
-// Publish/Unpublish course
+// Publish/Unpublish course (teacher only)
 export const toggleCourseStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params
@@ -247,6 +248,14 @@ export const toggleCourseStatus = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ success: false, message: 'Forbidden' })
     }
 
+    // Teacher can only publish if admin has approved
+    if (status === 'published' && course.adminApproval !== 'approved') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Course must be approved by admin before publishing' 
+      })
+    }
+
     course.status = status
     await course.save()
 
@@ -257,6 +266,98 @@ export const toggleCourseStatus = async (req: AuthRequest, res: Response) => {
     })
   } catch (error) {
     console.error('Error toggling course status:', error)
+    res.status(500).json({ success: false, message: 'Internal server error' })
+  }
+}
+
+// Admin approve/reject course
+export const adminApproveCourse = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    const { action, reason } = req.body // action: 'approve' or 'reject'
+    const adminId = req.user?.userId
+    
+    if (!adminId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' })
+    }
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Invalid action' })
+    }
+
+    const course = await Course.findById(id)
+    
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' })
+    }
+
+    if (action === 'approve') {
+      course.adminApproval = 'approved'
+      course.adminApprovedBy = new mongoose.Types.ObjectId(adminId)
+      course.adminApprovedAt = new Date()
+      course.adminRejectionReason = undefined
+    } else {
+      course.adminApproval = 'rejected'
+      course.adminRejectionReason = reason || 'No reason provided'
+      course.adminApprovedBy = undefined
+      course.adminApprovedAt = undefined
+    }
+
+    await course.save()
+
+    res.json({
+      success: true,
+      message: `Course ${action}d successfully`,
+      data: course
+    })
+  } catch (error) {
+    console.error('Error approving course:', error)
+    res.status(500).json({ success: false, message: 'Internal server error' })
+  }
+}
+
+// Get all courses for admin
+export const getAllCoursesForAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const adminId = req.user?.userId
+    
+    if (!adminId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' })
+    }
+
+    const courses = await Course.find({})
+      .populate('teacher', 'fullName email username')
+      .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      data: courses
+    })
+  } catch (error) {
+    console.error('Error fetching all courses for admin:', error)
+    res.status(500).json({ success: false, message: 'Internal server error' })
+  }
+}
+
+// Get pending courses for admin
+export const getPendingCourses = async (req: AuthRequest, res: Response) => {
+  try {
+    const adminId = req.user?.userId
+    
+    if (!adminId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' })
+    }
+
+    const courses = await Course.find({ adminApproval: 'pending' })
+      .populate('teacher', 'fullName email')
+      .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      data: courses
+    })
+  } catch (error) {
+    console.error('Error fetching pending courses:', error)
     res.status(500).json({ success: false, message: 'Internal server error' })
   }
 }
