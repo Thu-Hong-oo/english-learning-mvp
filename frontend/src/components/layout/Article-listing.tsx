@@ -70,54 +70,7 @@ const ArticlesListing = ({ onArticleClick }: ArticlesListingProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">E</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">EduPress</span>
-              </div>
-
-              <nav className="hidden md:flex items-center gap-6">
-                <a href="#" className="text-gray-700 hover:text-orange-500">
-                  Home
-                </a>
-                <a href="#" className="text-gray-700 hover:text-orange-500">
-                  Courses
-                </a>
-                <a href="#" className="text-orange-500 font-medium">
-                  Blog
-                </a>
-                <div className="relative">
-                  <button className="text-gray-700 hover:text-orange-500 flex items-center gap-1">
-                    Page
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-                <a href="#" className="text-gray-700 hover:text-orange-500">
-                  LearnPress Add-On
-                </a>
-                <a href="#" className="text-gray-700 hover:text-orange-500">
-                  Premium Theme
-                </a>
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button className="text-gray-700 hover:text-orange-500">Login / Register</button>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+  
 
       {/* Breadcrumb */}
       <div className="bg-white border-b">
