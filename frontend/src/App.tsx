@@ -21,6 +21,7 @@ import CoursePage from './pages/CoursePage'
 import CourseListing from './pages/CourseListing'
 import BlogPage from './pages/BlogPage'
 import AdminDashboard from './pages/AdminDashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
 import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
 
