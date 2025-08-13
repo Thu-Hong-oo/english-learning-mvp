@@ -11,11 +11,20 @@ import { User, BookOpen, Award, Link, Upload, CheckCircle, XCircle } from 'lucid
 interface ApplicationForm {
   email: string
   password: string
+  confirmPassword: string
   fullName: string
+  phone: string
+  dateOfBirth: string
   bio: string
   expertise: string[]
   experienceYears: number
+  education: string
+  certifications: string[]
   portfolioUrl: string
+  linkedinUrl: string
+  teachingExperience: string
+  preferredSubjects: string[]
+  availability: string
   attachments: { name: string; url: string }[]
 }
 
@@ -23,11 +32,20 @@ export default function InstructorApplicationPage() {
   const [formData, setFormData] = useState<ApplicationForm>({
     email: '',
     password: '',
+    confirmPassword: '',
     fullName: '',
+    phone: '',
+    dateOfBirth: '',
     bio: '',
     expertise: [],
     experienceYears: 0,
+    education: '',
+    certifications: [],
     portfolioUrl: '',
+    linkedinUrl: '',
+    teachingExperience: '',
+    preferredSubjects: [],
+    availability: '',
     attachments: []
   })
   const [newExpertise, setNewExpertise] = useState('')
@@ -109,9 +127,11 @@ export default function InstructorApplicationPage() {
 
       if (data.success) {
         setSuccess(true)
-        setTimeout(() => {
-          navigate('/')
-        }, 3000)
+        // Lưu thông tin user để hiển thị
+        setFormData(prev => ({
+          ...prev,
+          email: data.data.user.email
+        }))
       } else {
         setError(data.message || 'Có lỗi xảy ra khi gửi đơn')
       }
@@ -193,6 +213,19 @@ export default function InstructorApplicationPage() {
               Cảm ơn bạn đã đăng ký làm giảng viên. Chúng tôi sẽ xem xét đơn của bạn và liên hệ sớm nhất.
             </CardDescription>
           </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">📧 Bước tiếp theo:</h4>
+              <p className="text-sm text-blue-800">
+                1. Kiểm tra email để xác thực tài khoản<br/>
+                2. Đăng nhập sau khi xác thực thành công<br/>
+                3. Chờ admin duyệt đơn đăng ký
+              </p>
+            </div>
+                        <Button onClick={() => navigate('/login')} className="w-full bg-orange-500 hover:bg-orange-600">
+              Đi đến trang đăng nhập
+            </Button>
+          </CardContent>
         </Card>
       </div>
     )
@@ -222,6 +255,7 @@ export default function InstructorApplicationPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Thông tin đăng nhập */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -232,6 +266,35 @@ export default function InstructorApplicationPage() {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Nhập email của bạn"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Mật khẩu *
+                  </label>
+                  <Input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Xác nhận mật khẩu *
+                  </label>
+                  <Input
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    placeholder="Nhập lại mật khẩu"
                     required
                   />
                 </div>
@@ -249,6 +312,32 @@ export default function InstructorApplicationPage() {
                 </div>
               </div>
 
+              {/* Thông tin cá nhân */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Số điện thoại
+                  </label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="Nhập số điện thoại"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Ngày sinh
+                  </label>
+                  <Input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -260,6 +349,31 @@ export default function InstructorApplicationPage() {
                     value={formData.experienceYears}
                     onChange={(e) => handleInputChange('experienceYears', parseInt(e.target.value) || 0)}
                     placeholder="Ví dụ: 3"
+                  />
+                </div>
+              </div>
+
+              {/* Thông tin học vấn */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Học vấn
+                  </label>
+                  <Input
+                    value={formData.education}
+                    onChange={(e) => handleInputChange('education', e.target.value)}
+                    placeholder="Ví dụ: Đại học, chuyên ngành..."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Chứng chỉ
+                  </label>
+                  <Input
+                    value={formData.certifications.join(', ')}
+                    onChange={(e) => handleInputChange('certifications', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+                    placeholder="Ví dụ: TESOL, CELTA, IELTS..."
                   />
                 </div>
               </div>
@@ -310,17 +424,66 @@ export default function InstructorApplicationPage() {
                 )}
               </div>
 
+              {/* Kinh nghiệm giảng dạy */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Portfolio/Website cá nhân
+                  Kinh nghiệm giảng dạy
                 </label>
-                <div className="relative">
-                  <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Textarea
+                  value={formData.teachingExperience}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('teachingExperience', e.target.value)}
+                  placeholder="Mô tả kinh nghiệm giảng dạy, phương pháp, thành tích..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Môn học ưa thích */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Môn học ưa thích
+                </label>
+                <Input
+                  value={formData.preferredSubjects.join(', ')}
+                  onChange={(e) => handleInputChange('preferredSubjects', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+                  placeholder="Ví dụ: Tiếng Anh giao tiếp, Ngữ pháp, IELTS..."
+                />
+              </div>
+
+              {/* Lịch trình */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Lịch trình giảng dạy
+                </label>
+                <Textarea
+                  value={formData.availability}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('availability', e.target.value)}
+                  placeholder="Mô tả thời gian có thể giảng dạy (sáng, chiều, tối, cuối tuần...)"
+                  rows={2}
+                />
+              </div>
+
+              {/* Liên kết */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Portfolio/Website cá nhân
+                  </label>
                   <Input
+                    type="url"
                     value={formData.portfolioUrl}
                     onChange={(e) => handleInputChange('portfolioUrl', e.target.value)}
                     placeholder="https://your-portfolio.com"
-                    className="pl-10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    LinkedIn Profile
+                  </label>
+                  <Input
+                    value={formData.linkedinUrl}
+                    onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
+                    placeholder="https://linkedin.com/in/your-profile"
                   />
                 </div>
               </div>
