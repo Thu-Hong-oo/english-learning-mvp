@@ -10,6 +10,7 @@ import { User, BookOpen, Award, Link, Upload, CheckCircle, XCircle } from 'lucid
 
 interface ApplicationForm {
   email: string
+  password: string
   fullName: string
   bio: string
   expertise: string[]
@@ -21,6 +22,7 @@ interface ApplicationForm {
 export default function InstructorApplicationPage() {
   const [formData, setFormData] = useState<ApplicationForm>({
     email: '',
+    password: '',
     fullName: '',
     bio: '',
     expertise: [],

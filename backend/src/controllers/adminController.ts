@@ -43,10 +43,21 @@ export const reviewInstructorApplication = async (req: AuthRequest, res: Respons
     await app.save()
 
     if (action === 'approve') {
-      await User.findByIdAndUpdate(app.userId, { role: 'teacher' })
+      // Cập nhật role cho user
+      if (app.userId) {
+        // Nếu có userId, cập nhật trực tiếp
+        await User.findByIdAndUpdate(app.userId, { role: 'teacher' })
+      } else if (app.email) {
+        // Nếu chỉ có email, tìm user theo email và cập nhật
+        await User.findOneAndUpdate({ email: app.email }, { role: 'teacher' })
+      }
     }
 
-    res.json({ success: true, message: `Application ${action}d successfully`, data: app })
+    const message = action === 'approve' 
+      ? `Application approved successfully. User role has been updated to teacher.` 
+      : `Application rejected successfully.`
+    
+    res.json({ success: true, message, data: app })
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' })
   }

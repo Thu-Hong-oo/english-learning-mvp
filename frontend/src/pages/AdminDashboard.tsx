@@ -106,10 +106,18 @@ export default function AdminDashboard() {
       })
       
       if (response.ok) {
-        fetchData() // Refresh data
+        const result = await response.json();
+        alert(result.message); // Hiển thị thông báo
+        fetchData(); // Refresh data
+        
+        // Nếu approve, thông báo cho user biết cần đăng xuất/đăng nhập lại
+        if (action === 'approve') {
+          alert('Lưu ý: User đã được cập nhật role thành teacher. Họ cần đăng xuất và đăng nhập lại để nhận quyền mới.');
+        }
       }
     } catch (error) {
       console.error('Error reviewing application:', error)
+      alert('Có lỗi xảy ra khi duyệt đơn đăng ký')
     }
   }
 
