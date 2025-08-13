@@ -201,6 +201,18 @@ const authSlice = createSlice({
       apiService.setAuthToken(action.payload.token);
     },
 
+    // Action xử lý đăng nhập Google thành công
+    googleAuthSuccess: (state, action: PayloadAction<{ token: string; user: User }>) => {
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
+      state.loading = false;
+      state.error = null;
+      
+      // Set token cho apiService
+      apiService.setAuthToken(action.payload.token);
+    },
+
     // Action khởi tạo auth từ localStorage (khi app khởi động)
     initializeAuth: (state) => {
       const token = localStorage.getItem('token');

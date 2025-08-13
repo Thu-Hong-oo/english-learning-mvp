@@ -1,6 +1,17 @@
 import {Button }from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+
+  const handleExploreCourses = () => {
+    navigate('/course-listing');
+  };
+
+  const handleInstructorApplication = () => {
+    navigate('/instructor-application');
+  };
+
   return (
     <section className="bg-gradient-to-r from-yellow-100 via-green-100 to-blue-100 ">
       <div className="container mx-auto px-20">
@@ -13,9 +24,21 @@ export default function HeroSection() {
             <p className="text-gray-600 text-lg max-w-md">
               Học tập hiệu quả với các khóa học được thiết kế bài bản, dễ hiểu và thực tế.
             </p>
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full">
-              Khám phá khóa học
-            </Button>
+            <div className="flex gap-4">
+              <Button 
+                onClick={handleExploreCourses}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full"
+              >
+                Khám phá khóa học
+              </Button>
+              <Button 
+                onClick={handleInstructorApplication}
+                variant="outline"
+                className="border-blue-300 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full"
+              >
+                Đăng ký làm giảng viên
+              </Button>
+            </div>
           </div>
           <div className="relative">
             <img

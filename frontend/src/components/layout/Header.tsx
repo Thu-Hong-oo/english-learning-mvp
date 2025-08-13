@@ -185,28 +185,13 @@ const Header = () => {
               >
                 Bài viết
               </a>
-              <div className="py-2">
-                <a 
-                  href="#" 
-                  className="block text-gray-700 hover:text-orange-500 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Trang
-                </a>
-              </div>
+             
               <a 
                 href="#" 
                 className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Tiện ích LearnPress
-              </a>
-              <a 
-                href="#" 
-                className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Giao diện cao cấp
               </a>
               
               {/* Mobile Login/User Menu */}

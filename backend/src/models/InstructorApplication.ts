@@ -1,7 +1,8 @@
 import mongoose, { Document, Schema, Model } from 'mongoose'
 
 export interface IInstructorApplication extends Document {
-    userId: mongoose.Types.ObjectId
+    userId?: mongoose.Types.ObjectId
+    email?: string
     fullName: string
     bio?: string
     expertise?: string[]
@@ -17,7 +18,8 @@ export interface IInstructorApplication extends Document {
 }
 
 const instructorApplicationSchema = new Schema<IInstructorApplication>({
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    email: { type: String, trim: true, index: true },
     fullName: { type: String, required: true, trim: true },
     bio: { type: String, default: '' },
     expertise: [{ type: String, trim: true }],
@@ -31,6 +33,7 @@ const instructorApplicationSchema = new Schema<IInstructorApplication>({
 }, { timestamps: true })
 
 instructorApplicationSchema.index({ userId: 1, status: 1 })
+instructorApplicationSchema.index({ email: 1, status: 1 })
 
 const InstructorApplication: Model<IInstructorApplication> = mongoose.model<IInstructorApplication>('InstructorApplication', instructorApplicationSchema)
 

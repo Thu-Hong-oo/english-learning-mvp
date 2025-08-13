@@ -1,8 +1,11 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAppDispatch } from '../store/hooks';
+import { googleAuthSuccess } from '../store/slices/authSlice';
 
 export default function GoogleAuthSuccess() {
   const [searchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -12,6 +15,13 @@ export default function GoogleAuthSuccess() {
     if (token && userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
+        
+        // Lưu token và user vào localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Dispatch action để cập nhật Redux store
+        dispatch(googleAuthSuccess({ token, user }));
         
         // Gửi message về parent window
         if (window.opener) {
