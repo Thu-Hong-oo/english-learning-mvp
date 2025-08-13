@@ -82,20 +82,33 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+
+
 // Login user
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
+        
+        console.log('🔐 Login attempt:', { email, passwordLength: password?.length });
 
         // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
+            console.log('❌ User not found for email:', email);
             res.status(401).json({
                 success: false,
                 message: 'Invalid email or password'
             });
             return;
         }
+        
+        console.log('✅ User found:', {
+            email: user.email,
+            role: user.role,
+            isEmailVerified: user.isEmailVerified,
+            isActive: user.isActive,
+            hasPassword: !!user.password
+        });
 
         // Check if user is active
         if (!user.isActive) {
@@ -117,14 +130,24 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         }
 
         // Verify password
-        const isPasswordValid = await user.comparePassword(password);
+        const bcrypt = require('bcrypt');
+        console.log('🔐 Comparing passwords...');
+        console.log('Input password:', password);
+        console.log('Stored password hash:', user.password);
+        
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log('Password validation result:', isPasswordValid);
+        
         if (!isPasswordValid) {
+            console.log('❌ Password validation failed');
             res.status(401).json({
                 success: false,
                 message: 'Invalid email or password'
             });
             return;
         }
+        
+        console.log('✅ Password validation successful');
 
         // Update last login
         user.lastLogin = new Date();
@@ -264,55 +287,7 @@ export const sendVerification = async (req: Request, res: Response): Promise<voi
     }
 };
 
-// Verify email with OTP
-export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { otp } = req.body;
 
-        if (!otp) {
-            res.status(400).json({
-                success: false,
-                message: 'OTP is required'
-            });
-            return;
-        }
-
-        const user = await User.findOne({
-            emailVerificationOTP: otp,
-            emailVerificationOTPExpires: { $gt: new Date() }
-        });
-
-        if (!user) {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid or expired OTP'
-            });
-            return;
-        }
-
-        // Mark email as verified
-        user.isEmailVerified = true;
-        user.emailVerificationOTP = undefined;
-        user.emailVerificationOTPExpires = undefined;
-        await user.save();
-
-        // Send welcome email
-        // await sendWelcomeEmail(user.email, user.username); // This line was removed from imports, so it's removed here.
-
-        res.json({
-            success: true,
-            message: 'Email verified successfully'
-        });
-
-    } catch (error) {
-        console.error('Verify email error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: error instanceof Error ? error.message : 'Unknown error'
-        });
-    }
-};
 
 // Resend verification email
 export const resendVerification = async (req: Request, res: Response): Promise<void> => {
@@ -507,6 +482,78 @@ export const googleAuthAPI = async (req: Request, res: Response) => {
     res.status(500).json({ 
       success: false, 
       message: 'Google authentication failed' 
+    });
+  }
+};
+
+// Verify email with OTP
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      res.status(400).json({
+        success: false,
+        message: 'Email và OTP là bắt buộc'
+      });
+      return;
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy user với email này'
+      });
+      return;
+    }
+
+    // Check if user is already verified
+    if (user.isEmailVerified) {
+      res.status(400).json({
+        success: false,
+        message: 'Email đã được xác thực rồi'
+      });
+      return;
+    }
+
+    // Check if OTP is valid and not expired
+    if (!user.emailVerificationOTP || user.emailVerificationOTP !== otp) {
+      res.status(400).json({
+        success: false,
+        message: 'Mã OTP không đúng'
+      });
+      return;
+    }
+
+    if (user.emailVerificationOTPExpires && new Date() > user.emailVerificationOTPExpires) {
+      res.status(400).json({
+        success: false,
+        message: 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới'
+      });
+      return;
+    }
+
+    // Mark email as verified
+    user.isEmailVerified = true;
+    user.emailVerificationOTP = undefined;
+    user.emailVerificationOTPExpires = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Email đã được xác thực thành công! Bây giờ bạn có thể đăng nhập.',
+      data: {
+        user: user.toJSON()
+      }
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Có lỗi xảy ra khi xác thực email'
     });
   }
 };

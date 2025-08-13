@@ -64,8 +64,12 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       if (user && user.role === 'admin') {
         console.log('Admin user detected, redirecting to dashboard...');
         navigate('/admin');
+      } else if (user && user.role === 'teacher') {
+        console.log('Teacher user detected, redirecting to teacher dashboard...');
+        navigate('/teacher'); // Hoặc '/dashboard' tùy bạn muốn
       } else {
-        // to user
+        // Student user
+        console.log('Student user detected, redirecting to homepage...');
         navigate('/');
       }
     } else if (loginUser.rejected.match(result)) {

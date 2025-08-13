@@ -53,6 +53,13 @@ export default function InstructorApplicationPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [existingApplication, setExistingApplication] = useState<any>(null)
+  
+  // OTP verification states
+  const [showOtpForm, setShowOtpForm] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [otpError, setOtpError] = useState('')
+  const [otpSuccess, setOtpSuccess] = useState(false)
 
   const { user, isAuthenticated } = useAppSelector(state => state.auth)
   const navigate = useNavigate()
@@ -132,6 +139,8 @@ export default function InstructorApplicationPage() {
           ...prev,
           email: data.data.user.email
         }))
+        // Hiển thị form OTP ngay lập tức
+        setShowOtpForm(true)
       } else {
         setError(data.message || 'Có lỗi xảy ra khi gửi đơn')
       }
@@ -139,6 +148,42 @@ export default function InstructorApplicationPage() {
       setError('Có lỗi xảy ra khi gửi đơn. Vui lòng thử lại.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setOtpLoading(true)
+    setOtpError('')
+
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setOtpSuccess(true)
+        setOtpError('')
+        // Chuyển hướng đến trang đăng nhập sau 2 giây
+        setTimeout(() => {
+          navigate('/login')
+        }, 2000)
+      } else {
+        setOtpError(data.message || 'Mã OTP không đúng')
+      }
+    } catch (error) {
+      setOtpError('Có lỗi xảy ra khi xác thực. Vui lòng thử lại.')
+    } finally {
+      setOtpLoading(false)
     }
   }
 
@@ -198,33 +243,122 @@ export default function InstructorApplicationPage() {
     )
   }
 
-  if (success) {
+    if (success) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-lg">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Đơn đăng ký đã được gửi!
+              Đơn đăng ký đã được gửi thành công! 
             </CardTitle>
-            <CardDescription>
-              Cảm ơn bạn đã đăng ký làm giảng viên. Chúng tôi sẽ xem xét đơn của bạn và liên hệ sớm nhất.
+            <CardDescription className="text-lg">
+              Tài khoản đã được tạo và email xác thực đã được gửi
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">📧 Bước tiếp theo:</h4>
-              <p className="text-sm text-blue-800">
-                1. Kiểm tra email để xác thực tài khoản<br/>
-                2. Đăng nhập sau khi xác thực thành công<br/>
-                3. Chờ admin duyệt đơn đăng ký
+          <CardContent className="text-center space-y-6">
+            {/* Thông tin tài khoản */}
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-3"> Thông tin tài khoản:</h4>
+              <div className="text-left space-y-2">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Email:</span> {formData.email}
+                </p>
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Trạng thái:</span> Chờ xác thực email
+                </p>
+              </div>
+            </div>
+
+            {/* Form xác thực OTP */}
+            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h4 className="font-semibold text-yellow-900 mb-3">🔐 Xác thực tài khoản:</h4>
+              
+              <div className="text-left space-y-3">
+                <p className="text-sm text-yellow-800">
+                  Mã OTP 6 số đã được gửi đến email của bạn. Vui lòng kiểm tra và nhập mã để xác thực.
+                </p>
+                
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-yellow-900">
+                      Mã OTP 6 số:
+                    </label>
+                    <Input
+                      type="text"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="Nhập mã OTP 6 số"
+                      maxLength={6}
+                      className="text-center text-lg font-mono tracking-widest"
+                      required
+                    />
+                    <p className="text-xs text-yellow-700">
+                      Nhập chính xác 6 số từ email xác thực
+                    </p>
+                  </div>
+
+                  {otpError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-sm text-red-600">{otpError}</p>
+                    </div>
+                  )}
+
+                  {otpSuccess && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                      <p className="text-sm text-green-600">
+                        ✅ Xác thực thành công! Tài khoản đã được kích hoạt.
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                    disabled={otpLoading || otpSuccess}
+                  >
+                    {otpLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Đang xác thực...</span>
+                      </div>
+                    ) : otpSuccess ? (
+                      'Đã xác thực'
+                    ) : (
+                      'Xác thực OTP'
+                    )}
+                  </Button>
+                </form>
+              </div>
+               
+              </div>
+
+            {/* Thông báo admin */}
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="font-semibold text-gray-900 mb-2">👨‍💼 Quy trình duyệt:</h4>
+              <p className="text-sm text-gray-700">
+                Sau khi xác thực email, admin sẽ xem xét đơn đăng ký và cập nhật role thành giảng viên
               </p>
             </div>
-                        <Button onClick={() => navigate('/login')} className="w-full bg-orange-500 hover:bg-orange-600">
-              Đi đến trang đăng nhập
-            </Button>
+
+            {/* Nút điều hướng */}
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => navigate('/login')} 
+                className="flex-1 bg-orange-500 hover:bg-orange-600"
+              >
+                Đi đến trang đăng nhập
+              </Button>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="flex-1"
+              >
+                Đăng ký khác
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -79,10 +79,11 @@ export const submitPublicApplication = async (req: Request, res: Response) => {
     const verificationOTP = user.generateEmailVerificationOTP();
     await user.save();
 
-    // Send verification email
+    // Send verification email with OTP
     try {
       const { sendVerificationEmail } = require('../services/emailService');
       await sendVerificationEmail(user.email, user.username, verificationOTP);
+      console.log(`✅ Verification email sent to ${user.email} with OTP: ${verificationOTP}`);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       // Continue with registration even if email fails
@@ -111,8 +112,15 @@ export const submitPublicApplication = async (req: Request, res: Response) => {
 
     res.status(201).json({ 
       success: true, 
-      message: 'Đơn đăng ký đã được gửi thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.', 
-      data: { application: app, user: { email: user.email, fullName: user.fullName } }
+      message: 'Đơn đăng ký đã được gửi thành công! Email xác thực với mã OTP 6 số đã được gửi đến email của bạn.', 
+      data: { 
+        application: app, 
+        user: { 
+          email: user.email, 
+          fullName: user.fullName 
+        },
+        message: `Mã OTP 6 số đã được gửi đến ${user.email}. Vui lòng kiểm tra email và nhập mã để xác thực tài khoản.`
+      }
     })
   } catch (err) {
     console.error('Error submitting application:', err)
