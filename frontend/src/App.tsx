@@ -26,6 +26,7 @@ import CreateCourse from './pages/teacher/CreateCourse'
 import TeacherProfile from './pages/teacher/TeacherProfile'
 import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
+import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
   const dispatch = useAppDispatch();
@@ -60,10 +61,26 @@ export default function App() {
         <Route path="/course" element={<><Header /><CoursePage /><Footer /></>} />
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
         <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/teacher" element={<TeacherDashboard />} />
-        <Route path="/teacher/courses/create" element={<CreateCourse />} />
-        <Route path="/teacher/profile" element={<TeacherProfile />} />
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <TeacherDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/courses/create" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <CreateCourse />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/profile" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <TeacherProfile />
+          </ProtectedRoute>
+        } />
         <Route path="/instructor-application" element={<InstructorApplicationPage />} />
       </Routes>
      

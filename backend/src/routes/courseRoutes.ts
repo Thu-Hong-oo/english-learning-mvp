@@ -15,10 +15,12 @@ const router = express.Router()
 
 // Public routes
 router.get('/', getAllCourses)
-router.get('/:id', getCourseById)
 
-// Teacher routes
+// Teacher routes (must be before /:id to avoid conflict)
 router.get('/teacher', authenticateToken, authorizeRole(['teacher']), getTeacherCourses)
+
+// Course by ID route
+router.get('/:id', getCourseById)
 
 // Protected routes
 router.use(authenticateToken)

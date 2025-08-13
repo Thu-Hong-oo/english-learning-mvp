@@ -557,3 +557,32 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
     });
   }
 };
+
+// Test token and role
+export const testToken = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                success: false,
+                message: 'No user found in request'
+            });
+            return;
+        }
+
+        res.json({
+            success: true,
+            message: 'Token is valid',
+            data: {
+                userId: req.user.userId,
+                email: req.user.email,
+                role: req.user.role
+            }
+        });
+    } catch (error) {
+        console.error('Test token error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};

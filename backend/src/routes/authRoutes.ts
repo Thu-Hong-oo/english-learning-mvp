@@ -8,7 +8,8 @@ import {
     googleCallback, 
     googleAuthAPI,
     getProfile,
-    logout
+    logout,
+    testToken
 } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
@@ -28,5 +29,6 @@ router.post('/google', googleAuthAPI); // API endpoint (không redirect)
 // Protected routes
 router.get('/profile', authenticateToken, getProfile);
 router.post('/logout', authenticateToken, logout);
+router.get('/test-token', authenticateToken, testToken);
 
 export default router;

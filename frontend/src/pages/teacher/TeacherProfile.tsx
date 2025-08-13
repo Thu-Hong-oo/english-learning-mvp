@@ -63,7 +63,7 @@ export default function TeacherProfile() {
       setLoading(true)
       const token = localStorage.getItem('token')
       
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch('http://localhost:3000/api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -143,7 +143,7 @@ export default function TeacherProfile() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch('http://localhost:3000/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
