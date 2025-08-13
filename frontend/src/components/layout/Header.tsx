@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Search, Menu, X, LogIn, User, LogOut, Settings } from "lucide-react";
+import { ChevronDown, Search, Menu, X, LogIn, User, LogOut, Settings, BookOpen, Shield } from "lucide-react";
 import { Button } from '../ui/button';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
@@ -92,13 +92,41 @@ const Header = () => {
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
-                        // Có thể navigate đến profile page sau này
+                        navigate('/teacher/profile');
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <User className="w-4 h-4 mr-2" />
                       Hồ sơ
                     </button>
+                    
+                    {/* Teacher Dashboard Button */}
+                    {user?.role === 'teacher' && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          navigate('/teacher');
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Teacher Dashboard
+                      </button>
+                    )}
+                    
+                    {/* Admin Dashboard Button */}
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          navigate('/admin');
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Admin Dashboard
+                      </button>
+                    )}
                     
                     <button
                       onClick={() => {
@@ -206,11 +234,37 @@ const Header = () => {
                       className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
-                        // Có thể navigate đến profile page sau này
+                        navigate('/teacher/profile');
                       }}
                     >
                       Hồ sơ
                     </button>
+                    
+                    {/* Teacher Dashboard Button - Mobile */}
+                    {user?.role === 'teacher' && (
+                      <button 
+                        className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          navigate('/teacher');
+                        }}
+                      >
+                        Teacher Dashboard
+                      </button>
+                    )}
+                    
+                    {/* Admin Dashboard Button - Mobile */}
+                    {user?.role === 'admin' && (
+                      <button 
+                        className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          navigate('/admin');
+                        }}
+                      >
+                        Admin Dashboard
+                      </button>
+                    )}
                     <button 
                       className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
                       onClick={() => {

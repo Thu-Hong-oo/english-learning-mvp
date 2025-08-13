@@ -1,8 +1,10 @@
 import {Button }from '../ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../store/hooks';
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAppSelector(state => state.auth);
 
   const handleExploreCourses = () => {
     navigate('/course-listing');
@@ -10,6 +12,14 @@ export default function HeroSection() {
 
   const handleInstructorApplication = () => {
     navigate('/instructor-application');
+  };
+
+  const handleTeacherDashboard = () => {
+    navigate('/teacher');
+  };
+
+  const handleAdminDashboard = () => {
+    navigate('/admin');
   };
 
   return (
@@ -31,13 +41,43 @@ export default function HeroSection() {
               >
                 Khám phá khóa học
               </Button>
-              <Button 
-                onClick={handleInstructorApplication}
-                variant="outline"
-                className="border-blue-300 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full"
-              >
-                Đăng ký làm giảng viên
-              </Button>
+              
+              {/* Hiển thị nút phù hợp với role */}
+              {isAuthenticated && user ? (
+                user.role === 'teacher' ? (
+                  <Button 
+                    onClick={handleTeacherDashboard}
+                    variant="outline"
+                    className="border-green-300 text-green-600 hover:bg-green-50 px-8 py-3 rounded-full"
+                  >
+                    Teacher Dashboard
+                  </Button>
+                ) : user.role === 'admin' ? (
+                  <Button 
+                    onClick={handleAdminDashboard}
+                    variant="outline"
+                    className="border-purple-300 text-purple-600 hover:bg-purple-50 px-8 py-3 rounded-full"
+                  >
+                    Admin Dashboard
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleInstructorApplication}
+                    variant="outline"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full"
+                  >
+                    Đăng ký làm giảng viên
+                  </Button>
+                )
+              ) : (
+                <Button 
+                  onClick={handleInstructorApplication}
+                  variant="outline"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full"
+                >
+                  Đăng ký làm giảng viên
+                </Button>
+              )}
             </div>
           </div>
           <div className="relative">
