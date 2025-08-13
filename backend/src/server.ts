@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import courseRoutes from './routes/courseRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
+import postRoutes from './routes/postRoutes';
 
 
 
@@ -49,6 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/instructor', instructorRoutes);
+app.use('/api/posts', postRoutes);
 
 
 app.get('/', (req: Request, res: Response) => {
