@@ -37,8 +37,14 @@ export default function GoogleAuthSuccess() {
             window.close();
           }, 1000);
         } else {
-          // Nếu không có parent window, redirect về homepage
-          window.location.href = '/';
+          // Nếu không có parent window, kiểm tra role và redirect phù hợp
+          if (user && user.role === 'admin') {
+            console.log('Admin user detected, redirecting to dashboard...');
+            window.location.href = '/admin';
+          } else {
+            // Redirect về homepage cho user thường
+            window.location.href = '/';
+          }
         }
       } catch (error) {
         console.error('Error parsing user data:', error);

@@ -50,6 +50,7 @@ export default function AdminDashboard() {
   const [applications, setApplications] = useState<InstructorApplication[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
@@ -58,18 +59,35 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
+      setError(null);
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      };
+
       const [appsRes, coursesRes] = await Promise.all([
-        fetch('http://localhost:3000/api/admin/instructor-applications'),
-        fetch('http://localhost:3000/api/courses')
+        fetch('http://localhost:3000/api/admin/instructor-applications', { headers }),
+        fetch('http://localhost:3000/api/courses', { headers })
       ])
       
       const appsData = await appsRes.json()
       const coursesData = await coursesRes.json()
       
-      if (appsData.success) setApplications(appsData.data.items)
-      if (coursesData.success) setCourses(coursesData.data)
+      if (appsData.success) {
+        setApplications(appsData.data?.items || appsData.data || [])
+      } else {
+        console.error('Failed to fetch applications:', appsData.message)
+      }
+      
+      if (coursesData.success) {
+        setCourses(coursesData.data || [])
+      } else {
+        console.error('Failed to fetch courses:', coursesData.message)
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
+      setError('Có lỗi xảy ra khi tải dữ liệu')
     } finally {
       setLoading(false)
     }
@@ -77,9 +95,13 @@ export default function AdminDashboard() {
 
   const handleReviewApplication = async (id: string, action: 'approve' | 'reject', notes?: string) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/api/admin/instructor-applications/${id}/review`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         body: JSON.stringify({ action, notes })
       })
       
@@ -93,9 +115,13 @@ export default function AdminDashboard() {
 
   const handleCourseStatus = async (id: string, status: 'draft' | 'published' | 'archived') => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:3000/api/admin/courses/${id}/status`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        },
         body: JSON.stringify({ status })
       })
       
@@ -126,7 +152,29 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Có lỗi xảy ra</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={fetchData} className="bg-orange-500 hover:bg-orange-600">
+            Thử lại
+          </Button>
+        </div>
       </div>
     )
   }
@@ -203,15 +251,19 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {applications.slice(0, 5).map((app) => (
-                      <div key={app._id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{app.fullName}</p>
-                          <p className="text-sm text-gray-500">{app.userId.email}</p>
+                    {applications.length > 0 ? (
+                      applications.slice(0, 5).map((app) => (
+                        <div key={app._id} className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{app.fullName}</p>
+                            <p className="text-sm text-gray-500">{app.userId?.email || 'N/A'}</p>
+                          </div>
+                          {getStatusBadge(app.status)}
                         </div>
-                        {getStatusBadge(app.status)}
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">Chưa có đơn đăng ký nào</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -222,15 +274,19 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {courses.slice(0, 5).map((course) => (
-                      <div key={course._id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">{course.title}</p>
-                          <p className="text-sm text-gray-500">bởi {course.teacher.fullName}</p>
+                    {courses.length > 0 ? (
+                      courses.slice(0, 5).map((course) => (
+                        <div key={course._id} className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{course.title}</p>
+                            <p className="text-sm text-gray-500">bởi {course.teacher?.fullName || 'N/A'}</p>
+                          </div>
+                          {getStatusBadge(course.status)}
                         </div>
-                        {getStatusBadge(course.status)}
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">Chưa có khóa học nào</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -249,7 +305,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h3 className="font-semibold">{app.fullName}</h3>
-                          <p className="text-sm text-gray-500">{app.userId.email}</p>
+                          <p className="text-sm text-gray-500">{app.userId?.email || 'N/A'}</p>
                         </div>
                         {getStatusBadge(app.status)}
                       </div>
@@ -315,7 +371,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h3 className="font-semibold">{course.title}</h3>
-                          <p className="text-sm text-gray-500">Giảng viên: {course.teacher.fullName}</p>
+                          <p className="text-sm text-gray-500">Giảng viên: {course.teacher?.fullName || 'N/A'}</p>
                         </div>
                         {getStatusBadge(course.status)}
                       </div>

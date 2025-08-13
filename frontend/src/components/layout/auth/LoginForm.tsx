@@ -58,8 +58,16 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
       setLocalError(''); // Clear any previous errors
       console.log('Login successful, redirecting...');
       onSuccess?.();
-      // Chuyển hướng về trang chủ
-      navigate('/');
+      
+     
+      const user = result.payload.user;
+      if (user && user.role === 'admin') {
+        console.log('Admin user detected, redirecting to dashboard...');
+        navigate('/admin');
+      } else {
+        // to user
+        navigate('/');
+      }
     } else if (loginUser.rejected.match(result)) {
       // Đăng nhập thất bại - error sẽ được hiển thị từ Redux state
       console.log('Login failed:', result.payload);
