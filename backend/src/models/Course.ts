@@ -4,9 +4,9 @@ export interface ICourse extends Document {
     title: string;
     description: string;
     level: 'beginner' | 'intermediate' | 'advanced';
-    category: 'grammar' | 'vocabulary' | 'listening' | 'speaking' | 'reading' | 'writing' | 'general';
+    category: 'TOEIC' | 'IELTS' | 'TOEFL' | 'Cambridge' | 'Business English' | 'General English' | 'Conversation' | 'Grammar' | 'Vocabulary' | 'Pronunciation';
     thumbnail?: string;
-    duration: number; // in minutes
+    duration: number; // in hours
     lessonsCount: number;
     isPublished: boolean;
     createdBy: mongoose.Types.ObjectId;
@@ -43,7 +43,7 @@ const courseSchema = new Schema<ICourse>({
     },
     category: {
         type: String,
-        enum: ['grammar', 'vocabulary', 'listening', 'speaking', 'reading', 'writing', 'general'],
+        enum: ['TOEIC', 'IELTS', 'TOEFL', 'Cambridge', 'Business English', 'General English', 'Conversation', 'Grammar', 'Vocabulary', 'Pronunciation'],
         required: true
     },
     thumbnail: {
@@ -53,7 +53,7 @@ const courseSchema = new Schema<ICourse>({
     duration: {
         type: Number,
         required: true,
-        min: 1
+        min: 0
     },
     lessonsCount: {
         type: Number,

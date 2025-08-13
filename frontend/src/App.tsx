@@ -22,6 +22,8 @@ import CourseListing from './pages/CourseListing'
 import BlogPage from './pages/BlogPage'
 import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
+import CreateCourse from './pages/teacher/CreateCourse'
+import TeacherProfile from './pages/teacher/TeacherProfile'
 import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
 
@@ -59,6 +61,9 @@ export default function App() {
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
         <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/teacher" element={<TeacherDashboard />} />
+        <Route path="/teacher/courses/create" element={<CreateCourse />} />
+        <Route path="/teacher/profile" element={<TeacherProfile />} />
         <Route path="/instructor-application" element={<InstructorApplicationPage />} />
       </Routes>
      

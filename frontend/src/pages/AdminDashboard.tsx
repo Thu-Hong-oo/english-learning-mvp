@@ -80,11 +80,13 @@ export default function AdminDashboard() {
         console.error('Failed to fetch applications:', appsData.message)
       }
       
-      if (coursesData.success) {
-        setCourses(coursesData.data || [])
-      } else {
-        console.error('Failed to fetch courses:', coursesData.message)
-      }
+                if (coursesData.success) {
+            console.log('Courses data:', coursesData.data)
+            setCourses(Array.isArray(coursesData.data) ? coursesData.data : [])
+          } else {
+            console.error('Failed to fetch courses:', coursesData.message)
+            setCourses([])
+          }
     } catch (error) {
       console.error('Error fetching data:', error)
       setError('Có lỗi xảy ra khi tải dữ liệu')
@@ -141,9 +143,9 @@ export default function AdminDashboard() {
     }
   }
 
-  const pendingApplications = applications.filter(app => app.status === 'pending')
-  const publishedCourses = courses.filter(course => course.status === 'published')
-  const draftCourses = courses.filter(course => course.status === 'draft')
+  const pendingApplications = (applications || []).filter(app => app.status === 'pending')
+  const publishedCourses = (courses || []).filter(course => course.status === 'published')
+  const draftCourses = (courses || []).filter(course => course.status === 'draft')
 
   const getStatusBadge = (status: string) => {
     const variants = {
