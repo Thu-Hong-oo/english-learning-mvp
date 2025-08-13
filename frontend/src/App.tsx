@@ -19,9 +19,9 @@ import GoogleAuthSuccess from './pages/GoogleAuthSuccess'
 import GoogleAuthError from './pages/GoogleAuthError'
 import CoursePage from './pages/CoursePage'
 import CourseListing from './pages/CourseListing'
+import BlogPage from './pages/BlogPage'
+import AdminDashboard from './pages/AdminDashboard'
 import ScrollToTop from './components/ScrollToTop'
-import BlogApp from './pages/BlogPage'
-
 
 export default function App() {
   const dispatch = useAppDispatch();
@@ -55,7 +55,8 @@ export default function App() {
         <Route path="/auth/google-error" element={<GoogleAuthError />} />
         <Route path="/course" element={<><Header /><CoursePage /><Footer /></>} />
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
-        <Route path="/blog" element={<><Header /><BlogApp /><Footer /></>} />
+        <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
      
     </>
