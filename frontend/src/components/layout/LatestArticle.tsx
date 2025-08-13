@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import { Card, CardContent } from '../ui/card'
+import { useNavigate } from 'react-router-dom'
 const articles = [
     {
         id: 1,
@@ -25,6 +26,7 @@ const articles = [
     }
 ]
 const LatestArtical = () => {
+    const navigate = useNavigate()
     return (
         <section className="py-20">
             <div className="container mx-auto px-20">
@@ -33,7 +35,7 @@ const LatestArtical = () => {
                         <h2 className="text-3xl font-bold mb-2">Bài viết mới nhất</h2>
                         <p className="text-gray-600 mb-4">Khám phá các bài viết miễn phí</p>
                     </div>
-                    <Button variant="outline" className="rounded-full">
+                    <Button variant="outline" className="rounded-full" onClick={() => navigate('/blog')}>
                         Tất cả bài viết
                     </Button>
                 </div>

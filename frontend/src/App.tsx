@@ -19,6 +19,7 @@ import GoogleAuthSuccess from './pages/GoogleAuthSuccess'
 import GoogleAuthError from './pages/GoogleAuthError'
 import CoursePage from './pages/CoursePage'
 import CourseListing from './pages/CourseListing'
+import ScrollToTop from './components/ScrollToTop'
 import BlogApp from './pages/BlogPage'
 
 
@@ -33,6 +34,7 @@ export default function App() {
 
   return (
     <>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={
           <>
