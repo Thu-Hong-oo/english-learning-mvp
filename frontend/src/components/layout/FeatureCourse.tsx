@@ -4,7 +4,7 @@ import { Card, CardContent, } from '../ui/card'
 import { Clock, Users, Star } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { fetchFeaturedCourses } from '../../store/slices/courseSlice'
-
+import { useNavigate } from 'react-router-dom'
 
 // Helper function to format price
 const formatPrice = (price: number): string => {
@@ -25,7 +25,7 @@ const formatDuration = (minutes: number): string => {
 export default function FeaturedCourses() {
   const dispatch = useAppDispatch();
   const { featuredCourses, loading, error } = useAppSelector((state) => state.courses);
-
+  const navigate = useNavigate()
   // Fetch featured courses when component mounts
   useEffect(() => {
     dispatch(fetchFeaturedCourses());
@@ -66,7 +66,7 @@ export default function FeaturedCourses() {
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Khóa học nổi bật</h2>
             <p className="text-gray-600">Khám phá các khóa học phổ biến</p>
           </div>
-          <Button variant="outline" className="rounded-full">
+          <Button variant="outline" className="rounded-full" onClick={() => navigate('/course-listing')}>
             Tất cả khóa học
           </Button>
         </div>

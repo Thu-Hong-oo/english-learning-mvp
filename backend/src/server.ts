@@ -4,6 +4,8 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import authRoutes from './routes/authRoutes';
 import courseRoutes from './routes/courseRoutes';
+import adminRoutes from './routes/adminRoutes';
+import instructorRoutes from './routes/instructorRoutes';
 
 
 
@@ -45,6 +47,8 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/instructor', instructorRoutes);
 
 
 app.get('/', (req: Request, res: Response) => {

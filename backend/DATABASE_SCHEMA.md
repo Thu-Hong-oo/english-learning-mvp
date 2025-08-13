@@ -104,6 +104,35 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 └─────────────┘
 ```
 
+### Bổ sung: Post (Blog/Bài viết)
+
+```
+┌─────────────┐           ┌─────────────┐
+│    User     │ 1       N │    Post     │
+├─────────────┤───────────┤─────────────┤
+│ _id         │           │ _id         │
+│ username    │           │ authorId    │ → ref User._id
+│ ...         │           │ title       │
+└─────────────┘           │ slug        │ (unique)
+                          │ excerpt     │
+                          │ content     │ (rich text/HTML)
+                          │ coverImage  │
+                          │ tags        │
+                          │ category    │
+                          │ status      │ (draft|published)
+                          │ language    │ (en|vi)
+                          │ readingTime │ (minutes)
+                          │ publishedAt │
+                          │ views       │
+                          │ likes       │
+                          │ commentsCnt │
+                          │ createdAt   │
+                          │ updatedAt   │
+                          └─────────────┘
+
+Post (contentType = "post") liên kết với Comment qua bộ đôi `contentType` + `contentId`.
+```
+
 ## Mối quan hệ (Relationships)
 
 ### 1. User ↔ Course (1:N)
@@ -137,6 +166,14 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 ### 8. User ↔ Vocabulary (1:N)
 - Một user có thể tạo nhiều vocabulary items
 - Mỗi vocabulary item thuộc về một creator
+
+### 9. User ↔ Post (1:N)
+- Một user (tác giả) có thể tạo nhiều bài viết
+- Mỗi bài viết có một `authorId` tham chiếu về User
+
+### 10. Post ↔ Comment (1:N)
+- Một bài viết có nhiều comments
+- Mỗi comment trỏ tới bài viết qua `contentType = "post"` và `contentId = post._id`
 
 ## Indexes
 
@@ -180,6 +217,14 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 - `difficulty`, `frequency` (compound)
 - `createdBy`, `isApproved` (compound)
 
+### Post Collection
+- `slug` (unique)
+- `authorId`
+- `status`, `publishedAt` (compound)
+- `category`, `tags` (compound)
+- `language`
+- `views`
+
 ## Data Types
 
 ### String Fields
@@ -215,6 +260,7 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 - **Exercise Type**: multiple-choice, fill-blank, matching, true-false, writing, speaking, listening
 - **Status**: not-started, in-progress, completed, failed
 - **Language**: en, vi
+- **Post Status**: draft, published
 
 ## Validation Rules
 
@@ -224,6 +270,7 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 - Course: title, description, level, category, createdBy
 - Lesson: title, description, content, courseId, order, type, createdBy
 - Exercise: title, description, type, difficulty, points, lessonId, courseId, createdBy
+- Post: title, slug, content, authorId, status
 
 ### Unique Constraints
 - User: username, email
@@ -238,6 +285,7 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 - Progress: 0-100%
 - Difficulty: 1-5 scale
 - Rating: 0-5 scale
+ - ReadingTime: min 1 minute
 
 ## Performance Considerations
 
@@ -245,16 +293,19 @@ Sơ đồ database cho ứng dụng học tiếng Anh với 7 models chính, h�
 - Compound indexes cho các query patterns phổ biến
 - Index trên foreign keys để tối ưu joins
 - Index trên status fields để filter nhanh
+ - Index cho `Post.slug` để tra cứu bài viết theo URL
 
 ### Query Optimization
 - Sử dụng projection để chỉ lấy fields cần thiết
 - Pagination cho large datasets
 - Aggregation pipelines cho complex queries
+ - Sử dụng `lean()` cho các truy vấn Post dạng danh sách
 
 ### Caching Strategy
 - Redis cache cho user sessions
 - Cache cho course metadata
 - Cache cho vocabulary lookups
+ - Cache danh sách bài viết phổ biến (views cao) và bài viết mới (`publishedAt`)
 
 ## Security Features
 
