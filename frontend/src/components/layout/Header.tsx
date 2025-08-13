@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChevronDown, Search, Menu, X, LogIn, User, LogOut, Settings } from "lucide-react";
 import { Button } from '../ui/button';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
@@ -42,32 +42,28 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="logo">
-            <img src="/LOGO.png" alt="Logo" className="h-8 w-auto" />
+            <button onClick={() => navigate('/')}>
+              <img src="/LOGO.png" alt="Logo" className="h-8 w-auto" />
+            </button>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            <a href="#" className="text-orange-500 font-medium">
-              Home
+            <a href="/" className="text-orange-500 font-medium">
+              Trang chủ
             </a>
+            <a href="/course-listing" className="text-gray-700 hover:text-orange-500 transition-colors">
+              Khóa học
+            </a>
+            <a href="/blog" className="text-gray-700 hover:text-orange-500 transition-colors">
+              Bài viết
+            </a>
+            
+           
             <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
-              Courses
+              Tiện ích LearnPress
             </a>
-            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
-              Blog
-            </a>
-            <div className="flex items-center space-x-1 group relative">
-              <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
-                Page
-              </a>
-              <ChevronDown className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" />
-            </div>
-            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
-              LearnPress Add-On
-            </a>
-            <a href="#" className="text-gray-700 hover:text-orange-500 transition-colors">
-              Premium Theme
-            </a>
+           
           </nav>
 
           {/* Desktop Right side */}
@@ -90,7 +86,7 @@ const Header = () => {
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">{user.fullName}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
+                      {/* <p className="text-sm text-gray-500">{user.email}</p> */}
                     </div>
                     
                     <button
@@ -101,7 +97,7 @@ const Header = () => {
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      Profile
+                      Hồ sơ
                     </button>
                     
                     <button
@@ -112,7 +108,7 @@ const Header = () => {
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <Settings className="w-4 h-4 mr-2" />
-                      Settings
+                      Cài đặt
                     </button>
                     
                     <div className="border-t border-gray-100">
@@ -121,7 +117,7 @@ const Header = () => {
                         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
                         <LogOut className="w-4 h-4 mr-2" />
-                        Logout
+                        Đăng xuất
                       </button>
                     </div>
                   </div>
@@ -135,7 +131,7 @@ const Header = () => {
                 className="text-gray-700 font-bold hover:text-orange-500"
               >
                 <LogIn className="w-4 h-4 mr-2" />
-                Login
+                Đăng nhập
               </Button>
             )}
             
@@ -173,21 +169,21 @@ const Header = () => {
                 className="block text-orange-500 font-medium py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Home
+                Trang chủ
               </a>
               <a 
                 href="#" 
                 className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Courses
+                Khóa học
               </a>
               <a 
                 href="#" 
                 className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Blog
+                Bài viết
               </a>
               <div className="py-2">
                 <a 
@@ -195,7 +191,7 @@ const Header = () => {
                   className="block text-gray-700 hover:text-orange-500 transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Page
+                  Trang
                 </a>
               </div>
               <a 
@@ -203,14 +199,14 @@ const Header = () => {
                 className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                LearnPress Add-On
+                Tiện ích LearnPress
               </a>
               <a 
                 href="#" 
                 className="block text-gray-700 hover:text-orange-500 py-2 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Premium Theme
+                Giao diện cao cấp
               </a>
               
               {/* Mobile Login/User Menu */}
@@ -228,7 +224,7 @@ const Header = () => {
                         // Có thể navigate đến profile page sau này
                       }}
                     >
-                      Profile
+                      Hồ sơ
                     </button>
                     <button 
                       className="block text-gray-700 py-2 hover:text-orange-500 transition-colors"
@@ -237,7 +233,7 @@ const Header = () => {
                         // Có thể navigate đến settings page sau này
                       }}
                     >
-                      Settings
+                      Cài đặt
                     </button>
                     <button 
                       className="block text-red-600 py-2 hover:text-red-700 transition-colors"
@@ -246,7 +242,7 @@ const Header = () => {
                         handleLogout();
                       }}
                     >
-                      Logout
+                      Đăng xuất
                     </button>
                   </div>
                 ) : (
@@ -257,7 +253,7 @@ const Header = () => {
                       handleLogin();
                     }}
                   >
-                    Login
+                    Đăng nhập
                   </button>
                 )}
               </div>

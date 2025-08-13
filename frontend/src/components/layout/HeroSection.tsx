@@ -7,21 +7,20 @@ export default function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-3">
             <h1 className="text-5xl font-bold text-gray-900 leading-tight">
-              Build Skills With<br />
-              Online Course
+              Nâng cao kỹ năng với<br />
+              Khóa học trực tuyến
             </h1>
             <p className="text-gray-600 text-lg max-w-md">
-              We denounce with righteous indignation and dislike men who are 
-              so beguiled and demoralized that cannot trouble.
+              Học tập hiệu quả với các khóa học được thiết kế bài bản, dễ hiểu và thực tế.
             </p>
             <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full">
-              Post Comment
+              Khám phá khóa học
             </Button>
           </div>
           <div className="relative">
             <img
               src="./hero-student.png"
-              alt="Happy student with books and headphones"
+              alt="Học viên đang học"
               className="w-full h-auto"
             />
           </div>

@@ -8,7 +8,7 @@ import { fetchFeaturedCourses } from '../../store/slices/courseSlice'
 
 // Helper function to format price
 const formatPrice = (price: number): string => {
-  if (price === 0) return 'Free';
+  if (price === 0) return 'Miễn phí';
   return `$${price.toFixed(2)}`;
 };
 
@@ -38,7 +38,7 @@ export default function FeaturedCourses() {
         <div className="container mx-auto px-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading courses...</p>
+            <p className="mt-4 text-gray-600">Đang tải khóa học...</p>
           </div>
         </div>
       </section>
@@ -51,7 +51,7 @@ export default function FeaturedCourses() {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-20">
           <div className="text-center text-red-600">
-            <p>Error loading courses: {error}</p>
+            <p>Lỗi tải khóa học: {error}</p>
           </div>
         </div>
       </section>
@@ -63,11 +63,11 @@ export default function FeaturedCourses() {
       <div className="container mx-auto px-20">
         <div className="flex justify-between items-center mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Courses</h2>
-            <p className="text-gray-600">Explore our Popular Courses</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Khóa học nổi bật</h2>
+            <p className="text-gray-600">Khám phá các khóa học phổ biến</p>
           </div>
           <Button variant="outline" className="rounded-full">
-            All Courses
+            Tất cả khóa học
           </Button>
         </div>
 
@@ -88,7 +88,7 @@ export default function FeaturedCourses() {
                      </div>
                      <CardContent className="p-6">
                        <div className="mb-2">
-                         <span className="text-sm text-gray-500">Level: {course.level}</span>
+                          <span className="text-sm text-gray-500">Trình độ: {course.level}</span>
                        </div>
                        <h3 className="font-semibold text-gray-900 mb-4 line-clamp-2">
                          {course.title}
@@ -99,11 +99,11 @@ export default function FeaturedCourses() {
                        <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
                          <div className="flex items-center space-x-1">
                            <Clock className="w-4 h-4" />
-                           <span>{course.lessonsCount} Lessons</span>
+                            <span>{course.lessonsCount} bài học</span>
                          </div>
                          <div className="flex items-center space-x-1">
                            <Users className="w-4 h-4" />
-                           <span>{course.totalStudents} Students</span>
+                            <span>{course.totalStudents} học viên</span>
                          </div>
                          <div className="flex items-center space-x-1">
                            <Star className="w-4 h-4 text-yellow-500" />
@@ -114,8 +114,8 @@ export default function FeaturedCourses() {
                          <div className="flex items-center space-x-2">
                            <span className="text-lg font-bold text-orange-500">{formatPrice(course.price)}</span>
                          </div>
-                         <Button variant="outline" size="sm">
-                           View More
+                          <Button variant="outline" size="sm">
+                            Xem thêm
                          </Button>
                        </div>
                      </CardContent>

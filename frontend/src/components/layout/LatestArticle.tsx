@@ -30,11 +30,11 @@ const LatestArtical = () => {
             <div className="container mx-auto px-20">
                 <div className="flex justify-between">
                     <div>
-                        <h2 className="text-3xl font-bold mb-2">Latest Articals</h2>
-                        <p className="text-gray-600 mb-4">Explore our free Acticles</p>
+                        <h2 className="text-3xl font-bold mb-2">Bài viết mới nhất</h2>
+                        <p className="text-gray-600 mb-4">Khám phá các bài viết miễn phí</p>
                     </div>
                     <Button variant="outline" className="rounded-full">
-                        All Articals
+                        Tất cả bài viết
                     </Button>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

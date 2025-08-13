@@ -6,14 +6,13 @@ export default function LearnPressAddOns() {
       <div className="container mx-auto px-20">
         <div className="bg-gradient-to-r from-green-100 via-purple-100 to-pink-100 rounded-3xl p-12 relative overflow-hidden">
           <div className="max-w-md">
-            <p className="text-sm text-gray-600 mb-2">GET MORE POWER FROM</p>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">LearnPress Add-Ons</h2>
+            <p className="text-sm text-gray-600 mb-2">SỨC MẠNH TỪ</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Tiện ích LearnPress</h2>
             <p className="text-gray-600 mb-6">
-              The next level of LearnPress - LMS WordPress Plugin. More 
-              Powerful, Flexible and Magical Inside.
+              Nâng tầm LearnPress - plugin LMS cho WordPress. Mạnh mẽ, linh hoạt và đầy ma thuật bên trong.
             </p>
             <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-8">
-              Explore Course
+              Khám phá khóa học
             </Button>
           </div>
           

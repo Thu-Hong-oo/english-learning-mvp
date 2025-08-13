@@ -37,8 +37,8 @@ export default function StudentFeedback() {
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Student Feedbacks</h2>
-          <p className="text-gray-600">What Students Say About Academy LMS</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Phản hồi của học viên</h2>
+          <p className="text-gray-600">Học viên nói gì về Academy LMS</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

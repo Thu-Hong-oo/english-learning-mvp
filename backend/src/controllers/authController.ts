@@ -378,6 +378,15 @@ export const resendVerification = async (req: Request, res: Response): Promise<v
 // Google OAuth - Redirect to Google
 export const googleAuth = async (req: Request, res: Response) => {
   try {
+    // Bỏ qua test connection để tránh lỗi 404
+    // const isConnected = await googleAuthService.testConnection();
+    // if (!isConnected) {
+    //   return res.status(503).json({ 
+    //     success: false, 
+    //     message: 'Google OAuth service is currently unavailable. Please try again later.' 
+    //   });
+    // }
+    
     const authUrl = googleAuthService.getAuthUrl();
     res.json({ success: true, authUrl });
   } catch (error) {
@@ -391,15 +400,49 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
     
-    if (!code || typeof code !== 'string') {
+    // Xử lý code parameter - có thể là string, array, hoặc ParsedQs object
+    let authCode: string | undefined;
+    
+    if (Array.isArray(code)) {
+      authCode = typeof code[0] === 'string' ? code[0] : undefined;
+    } else if (typeof code === 'string') {
+      authCode = code;
+    } else if (code && typeof code === 'object') {
+      // Nếu code là ParsedQs object, lấy giá trị đầu tiên
+      const codeValues = Object.values(code);
+      const firstValue = codeValues[0];
+      if (Array.isArray(firstValue)) {
+        authCode = typeof firstValue[0] === 'string' ? firstValue[0] : undefined;
+      } else {
+        authCode = typeof firstValue === 'string' ? firstValue : undefined;
+      }
+    }
+    
+    console.log('Google OAuth callback received with code:', typeof authCode === 'string' ? authCode.substring(0, 20) + '...' : 'undefined');
+    
+    if (!authCode || typeof authCode !== 'string') {
+      console.error('Missing or invalid authorization code');
       return res.status(400).json({ 
         success: false, 
         message: 'Authorization code is required' 
       });
     }
 
+    // Bỏ qua test connection để tránh lỗi 404
+    // const isConnected = await googleAuthService.testConnection();
+    // if (!isConnected) {
+    //   console.error('Google OAuth service unavailable during callback');
+    //   const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/google-error?` +
+    //                    `error=${encodeURIComponent('Google OAuth service is currently unavailable')}`;
+    //   return res.redirect(errorUrl);
+    // }
+
+    console.log('Processing Google OAuth with code...');
+    
     // Xử lý Google OAuth
-    const result = await googleAuthService.handleGoogleAuth(code);
+    const result = await googleAuthService.handleGoogleAuth(authCode);
+    
+    console.log('Google OAuth processing successful, user:', result.user.email);
     
     // Chỉ lấy các field cần thiết từ user object
     const userData = {
@@ -424,11 +467,13 @@ export const googleCallback = async (req: Request, res: Response) => {
                        `isNewUser=${result.isNewUser}&` +
                        `user=${encodeURIComponent(JSON.stringify(userData))}`;
     
+    console.log('Redirecting to frontend:', redirectUrl.substring(0, 100) + '...');
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Google callback error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Google authentication failed';
     const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/google-error?` +
-                     `error=${encodeURIComponent('Google authentication failed')}`;
+                     `error=${encodeURIComponent(errorMessage)}`;
     res.redirect(errorUrl);
   }
 };

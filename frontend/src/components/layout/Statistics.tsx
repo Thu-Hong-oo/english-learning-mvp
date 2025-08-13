@@ -1,8 +1,8 @@
 const stats = [
-    { number: '25K+', label: 'Active Students', color: 'text-orange-500' },
-    { number: '899', label: 'Total Courses', color: 'text-orange-500' },
-    { number: '158', label: 'Instructor', color: 'text-orange-500' },
-    { number: '100%', label: 'Satisfaction Rate', color: 'text-orange-500' },
+    { number: '25K+', label: 'Học viên đang hoạt động', color: 'text-orange-500' },
+    { number: '899', label: 'Tổng số khóa học', color: 'text-orange-500' },
+    { number: '158', label: 'Giảng viên', color: 'text-orange-500' },
+    { number: '100%', label: 'Mức độ hài lòng', color: 'text-orange-500' },
   ]
   
   export default function Statistics() {

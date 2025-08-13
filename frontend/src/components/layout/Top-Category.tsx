@@ -20,11 +20,11 @@ export default function TopCategories() {
       <div className="container mx-auto px-20">
         <div className="flex justify-between items-center mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Top Categories</h2>
-            <p className="text-gray-600">Explore our Popular Categories</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Danh mục hàng đầu</h2>
+            <p className="text-gray-600">Khám phá các danh mục phổ biến</p>
           </div>
           <Button variant="outline" className="rounded-full">
-            All Categories
+            Tất cả danh mục
           </Button>
         </div>
 
@@ -37,7 +37,7 @@ export default function TopCategories() {
                   <IconComponent className={`w-8 h-8 ${category.color}`} />
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-1">{category.name}</h3>
-                <p className="text-sm text-gray-500">{category.courses} Courses</p>
+                <p className="text-sm text-gray-500">{category.courses} khóa học</p>
               </div>
             )
           })}
