@@ -25,8 +25,12 @@ export const listPosts = async (req: Request, res: Response) => {
 export const getPostBySlug = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params
-    const post = await Post.findOne({ slug, status: 'published' })
+    const post = await Post.findOne({ slug, status: 'published' }).populate('authorId', 'username fullName avatar')
     if (!post) return res.status(404).json({ success: false, message: 'Post not found' })
+    
+    // Increment view count
+    await Post.findByIdAndUpdate(post._id, { $inc: { views: 1 } })
+    
     res.json({ success: true, data: post })
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal server error' })

@@ -274,17 +274,27 @@ class ApiService {
     });
   }
 
-  // Comments Methods
-  async getComments(postId: string): Promise<ApiResponse> {
-    return this.request(`${API_ENDPOINTS.POSTS.DETAIL.replace(':id', postId)}/comments`, {
+  async getPostBySlug(slug: string): Promise<ApiResponse> {
+    return this.request(`/api/posts/slug/${slug}`, {
       method: HTTP_METHODS.GET,
     });
   }
 
-  async createComment(postId: string, data: any): Promise<ApiResponse> {
-    return this.request(`${API_ENDPOINTS.POSTS.DETAIL.replace(':id', postId)}/comments`, {
+  // Comments Methods
+  async getComments(contentType: string, contentId: string): Promise<ApiResponse> {
+    return this.request(`/api/comments?contentType=${contentType}&contentId=${contentId}`, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  async createComment(contentType: string, contentId: string, data: any): Promise<ApiResponse> {
+    return this.request('/api/comments', {
       method: HTTP_METHODS.POST,
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        contentType,
+        contentId
+      }),
     });
   }
 
@@ -317,10 +327,11 @@ class ApiService {
     });
   }
 
-  async reportComment(id: string): Promise<ApiResponse> {
+  async reportComment(id: string, data: { reason: string }): Promise<ApiResponse> {
     const endpoint = API_ENDPOINTS.COMMENTS.REPORT.replace(':id', id);
     return this.request(endpoint, {
       method: HTTP_METHODS.POST,
+      body: JSON.stringify(data),
     });
   }
 

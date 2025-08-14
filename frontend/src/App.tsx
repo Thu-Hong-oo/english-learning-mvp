@@ -32,6 +32,8 @@ import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedRoute from './components/ProtectedRoute'
 import LearnPage from './pages/LearnPage'
+import PostForm from './components/PostForm'
+import PostDetail from './components/PostDetail'
 
 export default function App() {
   const dispatch = useAppDispatch();
@@ -67,6 +69,21 @@ export default function App() {
         <Route path="/courses/:id" element={<><Header /><CoursePage /><Footer /></>} />
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
         <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
+        <Route path="/blog/create" element={
+          <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+            <Header />
+            <PostForm mode="create" />
+            <Footer />
+          </ProtectedRoute>
+        } />
+        <Route path="/blog/edit/:id" element={
+          <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+            <Header />
+            <PostForm mode="edit" />
+            <Footer />
+          </ProtectedRoute>
+        } />
+        <Route path="/blog/:slug" element={<><Header /><PostDetail /><Footer /></>} />
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <AdminDashboard />

@@ -5,7 +5,7 @@ export interface IComment extends Document {
     content: string;
     
     // Comment can be on different types of content
-    contentType: 'course' | 'lesson' | 'exercise' | 'discussion';
+    contentType: 'course' | 'lesson' | 'exercise' | 'discussion' | 'post';
     contentId: mongoose.Types.ObjectId;
     
     // For threaded comments
@@ -50,7 +50,7 @@ const commentSchema = new Schema<IComment>({
     },
     contentType: {
         type: String,
-        enum: ['course', 'lesson', 'exercise', 'discussion'],
+        enum: ['course', 'lesson', 'exercise', 'discussion', 'post'],
         required: true
     },
     contentId: {

@@ -6,7 +6,11 @@ const router = express.Router()
 
 // Public
 router.get('/', listPosts)
-router.get('/:slug', getPostBySlug)
+router.get('/slug/:slug', getPostBySlug)
+router.get('/:id', (req, res) => {
+  // Handle ID-based post retrieval if needed
+  res.status(404).json({ success: false, message: 'Use /slug/:slug for post retrieval' })
+})
 
 // Protected (author/admin)
 router.post('/', authenticateToken, authorizeRole(['admin', 'teacher']), createPost)

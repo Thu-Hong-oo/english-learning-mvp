@@ -47,7 +47,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentType, contentId 
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getComments(contentId);
+      const response = await apiService.getComments(contentType, contentId);
       if (response.success) {
         setComments(response.data.items || []);
       }
@@ -65,10 +65,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentType, contentId 
 
     try {
       setLoading(true);
-      const response = await apiService.createComment(contentId, {
+      const response = await apiService.createComment(contentType, contentId, {
         content: newComment,
-        contentType,
-        contentId,
         language: 'vi'
       });
 
@@ -89,10 +87,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentType, contentId 
 
     try {
       setLoading(true);
-      const response = await apiService.createComment(contentId, {
+      const response = await apiService.createComment(contentType, contentId, {
         content: replyContent,
-        contentType,
-        contentId,
         parentId: commentId,
         language: 'vi'
       });
@@ -181,7 +177,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ contentType, contentId 
     if (!reason) return;
 
     try {
-      const response = await apiService.reportComment(commentId);
+      const response = await apiService.reportComment(commentId, { reason });
 
       if (response.success) {
         alert('Báo cáo đã được gửi');

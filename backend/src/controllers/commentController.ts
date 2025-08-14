@@ -180,18 +180,18 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
     }
 
     const userId = req.user.userId
-    const isLiked = comment.likes.includes(userId)
-    const isDisliked = comment.dislikes.includes(userId)
+    const isLiked = comment.likes.some(likeId => likeId.toString() === userId)
+    const isDisliked = comment.dislikes.some(dislikeId => dislikeId.toString() === userId)
 
     if (isLiked) {
       // Unlike
-      comment.likes = comment.likes.filter(id => id.toString() !== userId)
+      comment.likes = comment.likes.filter(likeId => likeId.toString() !== userId)
     } else {
       // Like
-      comment.likes.push(userId)
+      comment.likes.push(userId as any)
       // Remove dislike if exists
       if (isDisliked) {
-        comment.dislikes = comment.dislikes.filter(id => id.toString() !== userId)
+        comment.dislikes = comment.dislikes.filter(dislikeId => dislikeId.toString() !== userId)
       }
     }
 
@@ -222,18 +222,18 @@ export const toggleDislike = async (req: AuthRequest, res: Response) => {
     }
 
     const userId = req.user.userId
-    const isDisliked = comment.dislikes.includes(userId)
-    const isLiked = comment.likes.includes(userId)
+    const isDisliked = comment.dislikes.some(dislikeId => dislikeId.toString() === userId)
+    const isLiked = comment.likes.some(likeId => likeId.toString() === userId)
 
     if (isDisliked) {
       // Undislike
-      comment.dislikes = comment.dislikes.filter(id => id.toString() !== userId)
+      comment.dislikes = comment.dislikes.filter(dislikeId => dislikeId.toString() !== userId)
     } else {
       // Dislike
-      comment.dislikes.push(userId)
+      comment.dislikes.push(userId as any)
       // Remove like if exists
       if (isLiked) {
-        comment.likes = comment.likes.filter(id => id.toString() !== userId)
+        comment.likes = comment.likes.filter(likeId => likeId.toString() !== userId)
       }
     }
 
