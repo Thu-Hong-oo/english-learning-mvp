@@ -129,13 +129,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Verify password
-        const bcrypt = require('bcrypt');
+        // Verify password using User model method
         console.log('🔐 Comparing passwords...');
         console.log('Input password:', password);
         console.log('Stored password hash:', user.password);
         
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.comparePassword(password);
         console.log('Password validation result:', isPasswordValid);
         
         if (!isPasswordValid) {

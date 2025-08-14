@@ -63,7 +63,7 @@ export default function App() {
         <Route path="/auth/google-success" element={<GoogleAuthSuccess />} />
         <Route path="/auth/google-error" element={<GoogleAuthError />} />
         <Route path="/course" element={<><Header /><CoursePage /><Footer /></>} />
-        <Route path="/course/:id" element={<><Header /><CoursePage /><Footer /></>} />
+        <Route path="/courses/:id" element={<><Header /><CoursePage /><Footer /></>} />
         <Route path="/course-listing" element={<><Header /><CourseListing /><Footer /></>} />
         <Route path="/blog" element={<><Header /><BlogPage /><Footer /></>} />
         <Route path="/admin" element={
@@ -86,6 +86,11 @@ export default function App() {
             <TeacherProfile />
           </ProtectedRoute>
         } />
+        <Route path="/teacher/courses/:courseId/create-lesson" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <CreateLesson />
+          </ProtectedRoute>
+        } />
         <Route path="/teacher/courses/:courseId/lessons/create" element={
           <ProtectedRoute allowedRoles={['teacher']}>
             <CreateLesson />
@@ -104,6 +109,21 @@ export default function App() {
         <Route path="/teacher/courses/:courseId/edit" element={
           <ProtectedRoute allowedRoles={['teacher']}>
             <EditCourse />
+          </ProtectedRoute>
+        } />
+        <Route path="/courses/:courseId/learn" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <CoursePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/courses/:courseId/lessons/:lessonId" element={
+          <ProtectedRoute allowedRoles={['student', 'teacher']}>
+            <CoursePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/courses/:courseId/lessons/:lessonId/learn" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <CoursePage />
           </ProtectedRoute>
         } />
         <Route path="/instructor-application" element={<InstructorApplicationPage />} />

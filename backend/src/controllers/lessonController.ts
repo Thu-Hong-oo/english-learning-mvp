@@ -27,7 +27,10 @@ export const getLessonsByTeacher = async (req: AuthRequest, res: Response) => {
 export const createLesson = async (req: AuthRequest, res: Response) => {
   try {
     const teacherId = req.user?.userId;
-    const { courseId, title, description, content, duration, type, order, videoUrl, audioUrl } = req.body;
+    const { course: courseId, title, description, content, duration, type, order, videoUrl, audioUrl } = req.body;
+
+    console.log('Creating lesson with data:', { courseId, title, type, videoUrl, audioUrl });
+    console.log('Teacher ID:', teacherId);
 
     if (!teacherId) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -38,6 +41,21 @@ export const createLesson = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({
         success: false,
         message: 'Title, description, content, duration, type, and order are required'
+      });
+    }
+
+    // Validate media URLs based on type
+    if (type === 'video' && !videoUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'Video URL is required for video lessons'
+      });
+    }
+
+    if (type === 'audio' && !audioUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'Audio URL is required for audio lessons'
       });
     }
 
@@ -109,6 +127,36 @@ export const getLessonById = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: lesson });
   } catch (error) {
     console.error('Error fetching lesson:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+// Get lessons by course (for students - only published lessons)
+export const getLessonsByCoursePublic = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.params;
+
+    // Check if course exists
+    const course = await Course.findOne({ _id: courseId });
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    // Only return published lessons for students
+    const lessons = await Lesson.find({ 
+      course: courseId, 
+      status: 'published' 
+    }).sort({ order: 1 });
+
+    res.json({
+      success: true,
+      data: lessons
+    });
+  } catch (error) {
+    console.error('Error fetching public lessons:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
@@ -224,39 +272,39 @@ export const deleteLesson = async (req: AuthRequest, res: Response) => {
 // Publish/Unpublish lesson
 export const toggleLessonStatus = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params
-    const { status } = req.body
-    const teacherId = req.user?.userId
-    
+    const { id } = req.params;
+    const teacherId = req.user?.userId;
+
     if (!teacherId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' })
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    if (!['draft', 'published'].includes(status)) {
-      return res.status(400).json({ success: false, message: 'Invalid status' })
-    }
-
-    const lesson = await Lesson.findById(id)
-    
+    // Check if lesson exists and belongs to teacher
+    const lesson = await Lesson.findOne({ _id: id, teacher: teacherId });
     if (!lesson) {
-      return res.status(404).json({ success: false, message: 'Lesson not found' })
+      return res.status(404).json({
+        success: false,
+        message: 'Lesson not found or you do not have permission to edit this lesson'
+      });
     }
 
-    // Check if teacher owns this lesson
-    if (lesson.teacher.toString() !== teacherId) {
-      return res.status(403).json({ success: false, message: 'Forbidden' })
-    }
-
-    lesson.status = status
-    await lesson.save()
+    // Toggle status between 'draft' and 'published'
+    const newStatus = lesson.status === 'draft' ? 'published' : 'draft';
+    
+    // Update lesson status
+    const updatedLesson = await Lesson.findByIdAndUpdate(
+      id,
+      { status: newStatus },
+      { new: true, runValidators: true }
+    );
 
     res.json({
       success: true,
-      message: `Lesson ${status} successfully`,
-      data: lesson
-    })
+      message: `Bài học đã ${newStatus === 'published' ? 'xuất bản' : 'chuyển về bản nháp'} thành công`,
+      data: updatedLesson
+    });
   } catch (error) {
-    console.error('Error toggling lesson status:', error)
-    res.status(500).json({ success: false, message: 'Internal server error' })
+    console.error('Error toggling lesson status:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
-}
+};

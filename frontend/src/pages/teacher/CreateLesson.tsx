@@ -89,16 +89,35 @@ export default function CreateLesson() {
     setLoading(true);
 
     try {
+      // Prepare data to send
+      const dataToSend: any = {
+        ...formData,
+        course: courseId
+      };
+
+      // Only include videoUrl if type is video and it has a value
+      if (formData.type === 'video' && formData.videoUrl) {
+        dataToSend.videoUrl = convertToEmbedUrl(formData.videoUrl);
+      } else if (formData.type === 'video') {
+        dataToSend.videoUrl = undefined;
+      }
+
+      // Only include audioUrl if type is audio and it has a value
+      if (formData.type === 'audio' && formData.audioUrl) {
+        dataToSend.audioUrl = formData.audioUrl;
+      } else if (formData.type === 'audio') {
+        dataToSend.audioUrl = undefined;
+      }
+
+      console.log('Sending data to backend:', dataToSend);
+
       const response = await fetch(`http://localhost:3000/api/lessons`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({
-          ...formData,
-          course: courseId
-        })
+        body: JSON.stringify(dataToSend)
       });
 
       const data = await response.json();

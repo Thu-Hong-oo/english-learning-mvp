@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -25,19 +24,30 @@ async function resetPassword(email, newPassword) {
       email: user.email,
       fullName: user.fullName,
       role: user.role,
-      currentPasswordHash: user.password
+      oldPasswordHash: user.password
     });
 
     // Hash new password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
     // Update password
-    user.password = hashedPassword;
+    user.password = newPasswordHash;
     await user.save();
 
-    console.log('✅ Password updated successfully');
+    console.log('✅ Password reset successfully!');
     console.log('New password hash:', user.password);
+
+    // Test the new password
+    const testResult = await bcrypt.compare(newPassword, user.password);
+    console.log('Password test result:', testResult ? '✅ SUCCESS' : '❌ FAILED');
+
+    if (testResult) {
+      console.log('\n🎉 Password reset successful!');
+      console.log('Email:', email);
+      console.log('New password:', newPassword);
+      console.log('You can now login with these credentials.');
+    }
 
   } catch (error) {
     console.error('❌ Error resetting password:', error);
@@ -46,11 +56,11 @@ async function resetPassword(email, newPassword) {
   }
 }
 
-// Usage: node reset-password.js <email> <newPassword>
+// Usage: node simple-reset-password.js <email> <newPassword>
 const args = process.argv.slice(2);
 if (args.length !== 2) {
-  console.log('Usage: node reset-password.js <email> <newPassword>');
-  console.log('Example: node reset-password.js teacher@example.com 123456');
+  console.log('Usage: node simple-reset-password.js <email> <newPassword>');
+  console.log('Example: node simple-reset-password.js thuhong12042002@gmail.com 123456');
   process.exit(1);
 }
 

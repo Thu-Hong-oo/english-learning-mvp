@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Card, CardContent, } from '../ui/card'
-import { Clock, Users, Star } from 'lucide-react'
+import { Clock, Users, Star, Plus, Play, BookOpen } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { fetchFeaturedCourses } from '../../store/slices/courseSlice'
 import { useNavigate } from 'react-router-dom'
@@ -25,6 +25,7 @@ const formatDuration = (minutes: number): string => {
 export default function FeaturedCourses() {
   const dispatch = useAppDispatch();
   const { featuredCourses, loading, error } = useAppSelector((state) => state.courses);
+  const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate()
   
   // Debug: Log the state
@@ -34,6 +35,23 @@ export default function FeaturedCourses() {
   useEffect(() => {
     dispatch(fetchFeaturedCourses());
   }, [dispatch]);
+
+  // Check if user is a teacher
+  const isTeacher = user?.role === 'teacher';
+  const isStudent = user?.role === 'student';
+
+  // Handle course actions
+  const handleViewCourse = (courseId: string) => {
+    navigate(`/courses/${courseId}`);
+  };
+
+  const handleAddLesson = (courseId: string) => {
+    navigate(`/teacher/courses/${courseId}/lessons/create`);
+  };
+
+  const handleStartLearning = (courseId: string) => {
+    navigate(`/courses/${courseId}/learn`);
+  };
 
   // Show loading state
   if (loading) {
@@ -119,9 +137,44 @@ export default function FeaturedCourses() {
                          <div className="flex items-center space-x-2">
                            <span className="text-lg font-bold text-orange-500">{formatPrice(course.price)}</span>
                          </div>
-                          <Button variant="outline" size="sm">
-                            Xem thêm
-                         </Button>
+                         <div className="flex items-center space-x-2">
+                           {/* View Course Button */}
+                           <Button 
+                             variant="outline" 
+                             size="sm"
+                             onClick={() => handleViewCourse(course._id)}
+                             className="flex items-center space-x-1"
+                           >
+                             <BookOpen className="w-3 h-3" />
+                             <span>Xem thêm</span>
+                           </Button>
+                           
+                           {/* Add Lesson Button - Only for teachers */}
+                           {isTeacher && (
+                             <Button 
+                               variant="outline" 
+                               size="sm"
+                               onClick={() => handleAddLesson(course._id)}
+                               className="flex items-center space-x-1 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                             >
+                               <Plus className="w-3 h-3" />
+                               <span>Thêm bài học</span>
+                             </Button>
+                           )}
+                           
+                           {/* Start Learning Button - Only for students */}
+                           {isStudent && (
+                             <Button 
+                               variant="default" 
+                               size="sm"
+                               onClick={() => handleStartLearning(course._id)}
+                               className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
+                             >
+                               <Play className="w-3 h-3" />
+                               <span>Vào học</span>
+                             </Button>
+                           )}
+                         </div>
                        </div>
                      </CardContent>
                    </Card>

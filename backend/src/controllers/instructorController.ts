@@ -12,28 +12,79 @@ export const submitPublicApplication = async (req: Request, res: Response) => {
       certifications, linkedinUrl, teachingExperience, preferredSubjects, availability
     } = req.body
 
-    // Validate required fields
-    if (!fullName || !bio || !expertise || !experienceYears || !email || !password || !confirmPassword) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Vui lòng điền đầy đủ thông tin bắt buộc' 
-      })
-    }
+    // Detailed validation with specific error messages
+    const errors = [];
 
-    // Validate password
-    if (password.length < 6) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Mật khẩu phải có ít nhất 6 ký tự' 
-      })
+    // Required fields validation
+    if (!fullName || (typeof fullName === 'string' && fullName.trim().length === 0)) {
+      errors.push('Họ và tên là bắt buộc');
     }
-
-    // Validate password confirmation
+    
+    if (!bio || (typeof bio === 'string' && bio.trim().length === 0)) {
+      errors.push('Giới thiệu bản thân là bắt buộc');
+    }
+    
+    if (!expertise || (typeof expertise === 'string' && expertise.trim().length === 0)) {
+      errors.push('Chuyên môn là bắt buộc');
+    }
+    
+    if (!experienceYears && experienceYears !== 0) {
+      errors.push('Số năm kinh nghiệm là bắt buộc');
+    }
+    
+    if (!email || (typeof email === 'string' && email.trim().length === 0)) {
+      errors.push('Email là bắt buộc');
+    } else if (typeof email === 'string' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push('Email không hợp lệ');
+    }
+    
+    if (!password || (typeof password === 'string' && password.length === 0)) {
+      errors.push('Mật khẩu là bắt buộc');
+    } else if (typeof password === 'string' && password.length < 6) {
+      errors.push('Mật khẩu phải có ít nhất 6 ký tự');
+    }
+    
+    if (!confirmPassword || (typeof confirmPassword === 'string' && confirmPassword.length === 0)) {
+      errors.push('Xác nhận mật khẩu là bắt buộc');
+    }
+    
     if (password !== confirmPassword) {
+      errors.push('Mật khẩu xác nhận không khớp');
+    }
+
+    // Additional validation for important fields
+    if (!phone || (typeof phone === 'string' && phone.trim().length === 0)) {
+      errors.push('Số điện thoại là bắt buộc');
+    }
+    
+    if (!dateOfBirth) {
+      errors.push('Ngày sinh là bắt buộc');
+    }
+    
+    if (!education || (typeof education === 'string' && education.trim().length === 0)) {
+      errors.push('Học vấn là bắt buộc');
+    }
+    
+    if (!teachingExperience || (typeof teachingExperience === 'string' && teachingExperience.trim().length === 0)) {
+      errors.push('Kinh nghiệm giảng dạy là bắt buộc');
+    }
+    
+    if (!preferredSubjects || !Array.isArray(preferredSubjects) || preferredSubjects.length === 0) {
+      errors.push('Môn học ưa thích là bắt buộc');
+    }
+    
+    if (!availability || (typeof availability === 'string' && availability.trim().length === 0)) {
+      errors.push('Lịch trình giảng dạy là bắt buộc');
+    }
+
+    // If there are validation errors, return them all
+    if (errors.length > 0) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Mật khẩu xác nhận không khớp' 
-      })
+        message: 'Vui lòng điền đầy đủ thông tin bắt buộc',
+        errors: errors,
+        errorCount: errors.length
+      });
     }
 
     // Check if email already exists in User collection
@@ -59,13 +110,11 @@ export const submitPublicApplication = async (req: Request, res: Response) => {
     }
 
     // Create user account with email verification
-    const bcrypt = require('bcrypt');
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
+    // Don't hash password here - User model will handle it in pre-save middleware
     const user = await User.create({
       username: email.split('@')[0], // Use email prefix as username
       email,
-      password: hashedPassword,
+      password: password, // Let User model hash this
       fullName,
       role: 'student', // Will be updated to 'teacher' when approved
       isEmailVerified: false, // Require email verification

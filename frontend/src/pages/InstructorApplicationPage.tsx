@@ -49,8 +49,10 @@ export default function InstructorApplicationPage() {
     attachments: []
   })
   const [newExpertise, setNewExpertise] = useState('')
+  const [newPreferredSubject, setNewPreferredSubject] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState<string[]>([])
   const [success, setSuccess] = useState(false)
   const [existingApplication, setExistingApplication] = useState<any>(null)
   
@@ -102,14 +104,28 @@ export default function InstructorApplicationPage() {
     }
   }
 
-  const removeExpertise = (expertise: string) => {
-    handleInputChange('expertise', formData.expertise.filter(e => e !== expertise))
+  const removeExpertise = (index: number) => {
+    const newExpertiseList = formData.expertise.filter((_, i) => i !== index)
+    handleInputChange('expertise', newExpertiseList)
+  }
+
+  const addPreferredSubject = () => {
+    if (newPreferredSubject.trim() && !formData.preferredSubjects.includes(newPreferredSubject.trim())) {
+      handleInputChange('preferredSubjects', [...formData.preferredSubjects, newPreferredSubject.trim()])
+      setNewPreferredSubject('')
+    }
+  }
+
+  const removePreferredSubject = (index: number) => {
+    const newSubjectsList = formData.preferredSubjects.filter((_, i) => i !== index)
+    handleInputChange('preferredSubjects', newSubjectsList)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setErrors([])
 
     try {
       const headers: Record<string, string> = {
@@ -142,7 +158,13 @@ export default function InstructorApplicationPage() {
         // Hiển thị form OTP ngay lập tức
         setShowOtpForm(true)
       } else {
-        setError(data.message || 'Có lỗi xảy ra khi gửi đơn')
+        // Handle detailed validation errors
+        if (data.errors && Array.isArray(data.errors)) {
+          setErrors(data.errors)
+          setError(`Có ${data.errors.length} lỗi cần sửa:`)
+        } else {
+          setError(data.message || 'Có lỗi xảy ra khi gửi đơn')
+        }
       }
     } catch (error) {
       setError('Có lỗi xảy ra khi gửi đơn. Vui lòng thử lại.')
@@ -337,7 +359,7 @@ export default function InstructorApplicationPage() {
 
             {/* Thông báo admin */}
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <h4 className="font-semibold text-gray-900 mb-2">👨‍💼 Quy trình duyệt:</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Quy trình duyệt:</h4>
               <p className="text-sm text-gray-700">
                 Sau khi xác thực email, admin sẽ xem xét đơn đăng ký và cập nhật role thành giảng viên
               </p>
@@ -387,6 +409,37 @@ export default function InstructorApplicationPage() {
               Vui lòng điền đầy đủ thông tin để chúng tôi có thể đánh giá hồ sơ của bạn
             </CardDescription>
           </CardHeader>
+          
+          {/* Error Display */}
+          {(error || errors.length > 0) && (
+            <div className="px-6 pt-0">
+              {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center space-x-2 text-red-800">
+                    <XCircle className="w-5 h-5" />
+                    <span className="font-medium">{error}</span>
+                  </div>
+                </div>
+              )}
+              
+              {errors.length > 0 && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start space-x-2 text-red-800 mb-2">
+                    <XCircle className="w-5 h-5 mt-0.5" />
+                    <span className="font-medium">Chi tiết lỗi:</span>
+                  </div>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    {errors.map((err, index) => (
+                      <li key={index} className="text-red-700">
+                        {err}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+          
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Thông tin đăng nhập */}
@@ -542,12 +595,12 @@ export default function InstructorApplicationPage() {
                 </div>
                 {formData.expertise.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.expertise.map((expertise) => (
-                      <Badge key={expertise} variant="outline" className="flex items-center gap-1">
+                    {formData.expertise.map((expertise, index) => (
+                      <Badge key={index} variant="outline" className="flex items-center gap-1">
                         {expertise}
                         <button
                           type="button"
-                          onClick={() => removeExpertise(expertise)}
+                          onClick={() => removeExpertise(index)}
                           className="ml-1 hover:text-red-600"
                         >
                           <XCircle className="w-3 h-3" />
@@ -576,11 +629,33 @@ export default function InstructorApplicationPage() {
                 <label className="text-sm font-medium text-gray-700">
                   Môn học ưa thích
                 </label>
-                <Input
-                  value={formData.preferredSubjects.join(', ')}
-                  onChange={(e) => handleInputChange('preferredSubjects', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
-                  placeholder="Ví dụ: Tiếng Anh giao tiếp, Ngữ pháp, IELTS..."
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={newPreferredSubject}
+                    onChange={(e) => setNewPreferredSubject(e.target.value)}
+                    placeholder="Thêm môn học ưa thích (ví dụ: Tiếng Anh giao tiếp)"
+                    onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && (e.preventDefault(), addPreferredSubject())}
+                  />
+                  <Button type="button" onClick={addPreferredSubject} variant="outline">
+                    Thêm
+                  </Button>
+                </div>
+                {formData.preferredSubjects.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.preferredSubjects.map((subject, index) => (
+                      <Badge key={index} variant="outline" className="flex items-center gap-1">
+                        {subject}
+                        <button
+                          type="button"
+                          onClick={() => removePreferredSubject(index)}
+                          className="ml-1 hover:text-red-600"
+                        >
+                          <XCircle className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Lịch trình */}

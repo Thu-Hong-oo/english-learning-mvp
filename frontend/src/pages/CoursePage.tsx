@@ -1,7 +1,21 @@
 
 import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
-import { Star, Users, BookOpen, Clock, Award } from "lucide-react"
+import { useParams, useNavigate } from "react-router-dom"
+import { Star, Users, BookOpen, Clock, Award, Plus, Play, Lock } from "lucide-react"
+import { useAppSelector } from "../store/hooks"
+import { Button } from "../components/ui/button"
+
+interface Lesson {
+  _id: string
+  title: string
+  description: string
+  duration: number
+  type: 'video' | 'text' | 'quiz' | 'audio'
+  order: number
+  status: string
+  videoUrl?: string
+  audioUrl?: string
+}
 
 interface CourseData {
   _id: string
@@ -15,19 +29,72 @@ interface CourseData {
   rating: number
   lessonsCount: number
   teacher: {
+    _id: string
     fullName: string
     email: string
   }
   status: string
   adminApproval: string
   createdAt: string
+  lessons?: Lesson[]
 }
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user is the teacher of this course
+  const isTeacher = user?.role === 'teacher' && user?.userId === courseData?.teacher?._id;
+  const isStudent = user?.role === 'student';
+
+  // Debug logging
+  console.log('User info:', { 
+    userId: user?.userId, 
+    role: user?.role, 
+    teacherId: courseData?.teacher?._id 
+  });
+  console.log('Role checks:', { isTeacher, isStudent });
+  console.log('Course data:', courseData);
+
+  // Handler functions
+  const handleAddLesson = () => {
+    navigate(`/teacher/courses/${id}/create-lesson`);
+  };
+
+  const handleStartLearning = (lessonId: string) => {
+    navigate(`/courses/${id}/lessons/${lessonId}/learn`);
+  };
+
+  const handleViewLesson = (lessonId: string) => {
+    navigate(`/courses/${id}/lessons/${lessonId}`);
+  };
+
+  const handleToggleLessonStatus = async (lessonId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Refresh the page to show updated status
+        window.location.reload();
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error toggling lesson status:', error);
+      alert('Có lỗi xảy ra khi thay đổi trạng thái bài học');
+    }
+  };
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -38,13 +105,45 @@ export default function CoursePage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/api/courses/${id}`);
-        const data = await response.json();
+        // Fetch course data
+        const courseResponse = await fetch(`http://localhost:3000/api/courses/${id}`);
+        const courseData = await courseResponse.json();
 
-        if (data.success) {
-          setCourseData(data.data);
+        if (courseData.success) {
+          // Fetch lessons for this course based on user role
+          let lessons = [];
+          if (user?.role === 'teacher') {
+            // Teacher can see all lessons (including drafts)
+            const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            
+            if (lessonsResponse.ok) {
+              const lessonsData = await lessonsResponse.json();
+              if (lessonsData.success) {
+                lessons = lessonsData.data;
+              }
+            }
+          } else {
+            // Students can only see published lessons
+            const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}/public`);
+            
+            if (lessonsResponse.ok) {
+              const lessonsData = await lessonsResponse.json();
+              if (lessonsData.success) {
+                lessons = lessonsData.data;
+              }
+            }
+          }
+
+          setCourseData({
+            ...courseData.data,
+            lessons: lessons
+          });
         } else {
-          setError(data.message || 'Failed to fetch course data');
+          setError(courseData.message || 'Failed to fetch course data');
         }
       } catch (error) {
         console.error('Error fetching course:', error);
@@ -204,6 +303,176 @@ export default function CoursePage() {
             </div>
           </div>
 
+          {/* Lessons Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Danh sách bài học</h2>
+                {isTeacher && (
+                  <Button
+                    onClick={handleAddLesson}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Thêm bài học
+                  </Button>
+                )}
+              </div>
+              
+              {isTeacher && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center space-x-2 text-blue-800 mb-4">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      Lưu ý: Chỉ bài học có trạng thái "Đã xuất bản" mới hiển thị cho học viên. 
+                      Sử dụng nút "Xuất bản" để cho phép học viên học bài học.
+                    </span>
+                  </div>
+                  
+                  {/* Test button */}
+                  <Button
+                    onClick={() => {
+                      console.log('Testing API...');
+                      fetch(`http://localhost:3000/api/lessons/${courseData.lessons?.[0]?._id}/toggle-status`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                      })
+                      .then(res => res.json())
+                      .then(data => console.log('API Response:', data))
+                      .catch(err => console.error('API Error:', err));
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
+                  >
+                    🧪 Test API
+                  </Button>
+                </div>
+              )}
+              
+              {courseData.lessons && courseData.lessons.length > 0 ? (
+                <div className="space-y-4">
+                  {courseData.lessons.map((lesson, index) => (
+                    <div
+                      key={lesson._id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                            {lesson.order}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 mb-1">{lesson.title}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{lesson.description}</p>
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <span className="flex items-center space-x-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{lesson.duration} phút</span>
+                              </span>
+                              <span className="capitalize">{lesson.type}</span>
+                              {isTeacher && (
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  lesson.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {lesson.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          {/* Debug info */}
+                          {isTeacher && (
+                            <span className="text-xs text-red-500">
+                              Teacher: {user?.userId} | Course Teacher: {courseData?.teacher?._id}
+                            </span>
+                          )}
+                          
+                          {isStudent ? (
+                            <Button
+                              onClick={() => handleStartLearning(lesson._id)}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              size="sm"
+                            >
+                              <Play className="w-4 h-4 mr-2" />
+                              Vào học
+                            </Button>
+                          ) : (
+                            <>
+                              <Button
+                                onClick={() => handleViewLesson(lesson._id)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Xem
+                              </Button>
+                              
+                              {/* Always show publish button for debugging */}
+                              <Button
+                                onClick={() => handleToggleLessonStatus(lesson._id)}
+                                variant={lesson.status === 'published' ? 'outline' : 'default'}
+                                size="sm"
+                                className={lesson.status === 'published' 
+                                  ? 'border-orange-500 text-orange-600 hover:bg-orange-50' 
+                                  : 'bg-green-600 hover:bg-green-700 text-white'
+                                }
+                              >
+                                {lesson.status === 'published' ? (
+                                  <>
+                                    <Lock className="w-4 h-4 mr-2" />
+                                    Ẩn
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Xuất bản
+                                  </>
+                                )}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 mb-4">
+                    <BookOpen className="w-16 h-16 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {isTeacher ? 'Chưa có bài học nào' : 'Chưa có bài học nào được xuất bản'}
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {isTeacher 
+                      ? 'Hãy tạo bài học đầu tiên để bắt đầu khóa học' 
+                      : 'Hãy quay lại sau khi giảng viên xuất bản bài học'
+                    }
+                  </p>
+                  {isTeacher && (
+                    <Button
+                      onClick={handleAddLesson}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Tạo bài học đầu tiên
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
@@ -214,14 +483,37 @@ export default function CoursePage() {
                   </span>
                 </div>
                 
-                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4">
-                  Xem khóa học
-                </button>
+                {isStudent ? (
+                  <button 
+                    onClick={() => courseData.lessons && courseData.lessons.length > 0 && handleStartLearning(courseData.lessons[0]._id)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={!courseData.lessons || courseData.lessons.length === 0}
+                  >
+                    {courseData.lessons && courseData.lessons.length > 0 ? 'Bắt đầu học' : 'Chưa có bài học'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => courseData.lessons && courseData.lessons.length > 0 && courseData.lessons[0] && handleViewLesson(courseData.lessons[0]._id)}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={!courseData.lessons || courseData.lessons.length === 0}
+                  >
+                    {courseData.lessons && courseData.lessons.length > 0 ? 'Xem bài học' : 'Chưa có bài học'}
+                  </button>
+                )}
                 
                 <div className="text-sm text-gray-600">
                   <p>✓ Truy cập vĩnh viễn</p>
                   <p>✓ Chứng chỉ hoàn thành</p>
                   <p>✓ Hỗ trợ 24/7</p>
+                  {!courseData.lessons || courseData.lessons.length === 0 ? (
+                    <p className="text-orange-600 font-medium mt-2">
+                      ⚠️ {isTeacher ? 'Chưa có bài học nào' : 'Chưa có bài học nào được xuất bản'}
+                    </p>
+                  ) : (
+                    <p className="text-green-600 font-medium mt-2">
+                      ✓ {courseData.lessons.length} bài học sẵn sàng
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
