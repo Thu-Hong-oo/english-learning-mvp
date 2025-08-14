@@ -31,6 +31,7 @@ import EditCourse from './pages/teacher/EditCourse'
 import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedRoute from './components/ProtectedRoute'
+import LearnPage from './pages/LearnPage'
 
 export default function App() {
   const dispatch = useAppDispatch();
@@ -113,7 +114,7 @@ export default function App() {
         } />
         <Route path="/courses/:courseId/learn" element={
           <ProtectedRoute allowedRoles={['student']}>
-            <CoursePage />
+            <LearnPage />
           </ProtectedRoute>
         } />
         <Route path="/courses/:courseId/lessons/:lessonId" element={
@@ -123,7 +124,7 @@ export default function App() {
         } />
         <Route path="/courses/:courseId/lessons/:lessonId/learn" element={
           <ProtectedRoute allowedRoles={['student']}>
-            <CoursePage />
+            <LearnPage />
           </ProtectedRoute>
         } />
         <Route path="/instructor-application" element={<InstructorApplicationPage />} />

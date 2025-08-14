@@ -15,6 +15,7 @@ interface LessonFormData {
   videoUrl?: string;
   audioUrl?: string;
   order: number;
+  status: 'draft' | 'published';
 }
 
 export default function EditLesson() {
@@ -29,7 +30,9 @@ export default function EditLesson() {
     duration: 30,
     type: 'video',
     videoUrl: '',
-    order: 1
+    audioUrl: '',
+    order: 1,
+    status: 'draft'
   });
 
   useEffect(() => {
@@ -57,7 +60,8 @@ export default function EditLesson() {
           type: data.data.type || 'video',
           videoUrl: data.data.videoUrl || '',
           audioUrl: data.data.audioUrl || '',
-          order: data.data.order || 1
+          order: data.data.order || 1,
+          status: data.data.status || 'draft'
         });
       } else {
         alert('Không thể tải thông tin bài học');
@@ -140,6 +144,30 @@ export default function EditLesson() {
             <Card>
               <CardHeader>
                 <CardTitle>Thông tin bài học</CardTitle>
+                {/* Status notification */}
+                <div className={`mt-2 p-3 rounded-lg ${
+                  formData.status === 'published' 
+                    ? 'bg-green-50 border border-green-200 text-green-800' 
+                    : 'bg-yellow-50 border border-yellow-200 text-yellow-800'
+                }`}>
+                  <div className="flex items-center space-x-2">
+                    {formData.status === 'published' ? (
+                      <>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Bài học đã xuất bản - Học viên có thể xem và học</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Bài học đang ở trạng thái bản nháp - Học viên không thể xem</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -200,17 +228,34 @@ export default function EditLesson() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Thứ tự bài học *
-                    </label>
-                    <Input
-                      type="number"
-                      value={formData.order}
-                      onChange={(e) => handleInputChange('order', parseInt(e.target.value))}
-                      min="1"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Thứ tự bài học *
+                      </label>
+                      <Input
+                        type="number"
+                        value={formData.order}
+                        onChange={(e) => handleInputChange('order', parseInt(e.target.value))}
+                        min="1"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Trạng thái bài học *
+                      </label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => handleInputChange('status', e.target.value as 'draft' | 'published')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="draft">Bản nháp</option>
+                        <option value="published">Đã xuất bản</option>
+                      </select>
+                    </div>
                   </div>
 
                   {formData.type === 'video' && (
@@ -260,6 +305,21 @@ export default function EditLesson() {
                     >
                       Hủy
                     </Button>
+                    
+                    {/* Quick publish button */}
+                    {formData.status === 'draft' && (
+                      <Button
+                        type="button"
+                        onClick={() => handleInputChange('status', 'published')}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Xuất bản ngay
+                      </Button>
+                    )}
+                    
                     <Button type="submit" disabled={loading}>
                       {loading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -294,11 +354,34 @@ export default function EditLesson() {
                     <span>Loại: {formData.type}</span>
                     <span>Thời lượng: {formData.duration} phút</span>
                     <span>Thứ tự: {formData.order}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      formData.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {formData.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+                    </span>
                   </div>
 
                   {formData.type === 'video' && formData.videoUrl && (
-                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-500">Video Preview</span>
+                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      <iframe
+                        src={formData.videoUrl}
+                        title="Video Preview"
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+
+                  {formData.type === 'audio' && formData.audioUrl && (
+                    <div className="bg-gray-100 rounded-lg p-4">
+                      <audio controls className="w-full">
+                        <source src={formData.audioUrl} type="audio/mpeg" />
+                        <source src={formData.audioUrl} type="audio/ogg" />
+                        <source src={formData.audioUrl} type="audio/wav" />
+                        Trình duyệt của bạn không hỗ trợ phát audio.
+                      </audio>
                     </div>
                   )}
 

@@ -119,13 +119,13 @@ npm run watch
 - `POST /api/lessons` - Tạo bài học mới
 - `PUT /api/lessons/:id` - Cập nhật bài học
 
-### Exercises
+### Exercises (Đang phát triển)
 - `GET /api/lessons/:lessonId/exercises` - Lấy danh sách bài tập
 - `GET /api/exercises/:id` - Lấy chi tiết bài tập
 - `POST /api/exercises/:id/submit` - Nộp bài tập
 - `GET /api/exercises/:id/results` - Xem kết quả
 
-### Progress
+### Progress(Đang phát triển)
 - `GET /api/progress` - Lấy tiến độ học tập
 - `POST /api/progress/update` - Cập nhật tiến độ
 - `GET /api/progress/analytics` - Thống kê học tập

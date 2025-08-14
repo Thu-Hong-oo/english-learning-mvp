@@ -83,6 +83,26 @@ export default function CoursePreview() {
     }
   };
 
+  const toggleLessonStatus = async (lessonId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchCourseDetails();
+      } else {
+        alert('Lỗi: ' + (data.message || 'Không thể cập nhật trạng thái bài học'));
+      }
+    } catch (error) {
+      console.error('Error toggling lesson status:', error);
+      alert('Có lỗi xảy ra khi cập nhật trạng thái bài học');
+    }
+  };
+
   const getLessonIcon = (type: string) => {
     switch (type) {
       case 'video':
@@ -307,6 +327,7 @@ export default function CoursePreview() {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">Chỉ bài học <span className="font-medium">đã xuất bản</span> mới hiển thị cho học viên.</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -334,6 +355,14 @@ export default function CoursePreview() {
                             >
                               {lesson.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
                             </Badge>
+                            <Button
+                              size="sm"
+                              variant={lesson.status === 'published' ? 'outline' : 'default'}
+                              className={lesson.status === 'published' ? 'border-orange-200 text-orange-700 hover:bg-orange-50' : ''}
+                              onClick={() => toggleLessonStatus(lesson._id)}
+                            >
+                              {lesson.status === 'published' ? 'Ẩn' : 'Xuất bản'}
+                            </Button>
                             <Button
                               size="sm"
                               variant="ghost"

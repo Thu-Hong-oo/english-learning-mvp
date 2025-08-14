@@ -47,18 +47,20 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user is the teacher of this course
-  const isTeacher = user?.role === 'teacher' && user?.userId === courseData?.teacher?._id;
+  // Check if user is the teacher of this course - moved inside component to avoid null reference
+  const isTeacher = user?.role === 'teacher' && courseData && user?._id === courseData.teacher?._id;
   const isStudent = user?.role === 'student';
 
   // Debug logging
   console.log('User info:', { 
-    userId: user?.userId, 
+    userId: user?._id, 
     role: user?.role, 
     teacherId: courseData?.teacher?._id 
   });
   console.log('Role checks:', { isTeacher, isStudent });
   console.log('Course data:', courseData);
+  console.log('🔑 Token exists:', !!localStorage.getItem('token'));
+  console.log('👤 User authenticated:', !!user);
 
   // Handler functions
   const handleAddLesson = () => {
@@ -112,8 +114,11 @@ export default function CoursePage() {
         if (courseData.success) {
           // Fetch lessons for this course based on user role
           let lessons = [];
+          console.log('🔍 Fetching lessons for user role:', user?.role);
+          
           if (user?.role === 'teacher') {
             // Teacher can see all lessons (including drafts)
+            console.log('👨‍🏫 Fetching all lessons for teacher...');
             const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}`, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -122,21 +127,46 @@ export default function CoursePage() {
             
             if (lessonsResponse.ok) {
               const lessonsData = await lessonsResponse.json();
+              console.log('📚 Teacher lessons response:', lessonsData);
               if (lessonsData.success) {
                 lessons = lessonsData.data;
               }
+            } else {
+              console.error('❌ Teacher lessons response not ok:', lessonsResponse.status);
             }
           } else {
             // Students can only see published lessons
-            const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}/public`);
+            console.log('👨‍🎓 Fetching published lessons for student...');
+            console.log('🔗 API URL:', `http://localhost:3000/api/lessons/course/${id}/public`);
             
-            if (lessonsResponse.ok) {
-              const lessonsData = await lessonsResponse.json();
-              if (lessonsData.success) {
-                lessons = lessonsData.data;
+            try {
+              const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}/public`);
+              console.log('📡 Response status:', lessonsResponse.status);
+              console.log('📡 Response ok:', lessonsResponse.ok);
+              
+              if (lessonsResponse.ok) {
+                const lessonsData = await lessonsResponse.json();
+                console.log('📚 Student lessons response:', lessonsData);
+                if (lessonsData.success) {
+                  lessons = lessonsData.data;
+                  console.log('✅ Lessons fetched successfully:', lessons);
+                } else {
+                  console.error('❌ Lessons response not successful:', lessonsData);
+                }
+              } else {
+                console.error('❌ Student lessons response not ok:', lessonsResponse.status);
+                const errorText = await lessonsResponse.text();
+                console.error('❌ Error response body:', errorText);
               }
+            } catch (fetchError) {
+              console.error('❌ Fetch error:', fetchError);
             }
           }
+          
+          console.log('📖 Final lessons array:', lessons);
+          console.log('📊 Lessons length:', lessons.length);
+          console.log('🔍 Course ID being fetched:', id);
+          console.log('👤 User role:', user?.role);
 
           setCourseData({
             ...courseData.data,
@@ -154,7 +184,7 @@ export default function CoursePage() {
     };
 
     fetchCourseData();
-  }, [id]);
+  }, [id, user?.role]);
 
   if (loading) {
     return (
@@ -353,6 +383,7 @@ export default function CoursePage() {
                   </Button>
                 </div>
               )}
+         
               
               {courseData.lessons && courseData.lessons.length > 0 ? (
                 <div className="space-y-4">
@@ -390,7 +421,7 @@ export default function CoursePage() {
                           {/* Debug info */}
                           {isTeacher && (
                             <span className="text-xs text-red-500">
-                              Teacher: {user?.userId} | Course Teacher: {courseData?.teacher?._id}
+                              Teacher: {user?._id} | Course Teacher: {courseData?.teacher?._id}
                             </span>
                           )}
                           
