@@ -13,14 +13,16 @@ import { authenticateToken, authorizeRole } from '../middleware/auth';
 
 const router = express.Router();
 
-// Protected routes
+// Public routes (no authentication required)
+router.get('/course/:courseId/public', getLessonsByCoursePublic); // Public route for students
+
+// Protected routes (authentication required)
 router.use(authenticateToken);
 
 // Teacher routes - Specific routes must come before parameterized routes
 router.post('/', authorizeRole(['teacher']), createLesson);
 router.get('/teacher', authorizeRole(['teacher']), getLessonsByTeacher);
 router.get('/course/:courseId', authorizeRole(['teacher']), getLessonsByCourse);
-router.get('/course/:courseId/public', getLessonsByCoursePublic); // New route for students
 router.patch('/:id/toggle-status', authorizeRole(['teacher']), toggleLessonStatus); // Toggle lesson status
 router.get('/:id', authorizeRole(['teacher']), getLessonById);
 router.put('/:id', authorizeRole(['teacher']), updateLesson);
