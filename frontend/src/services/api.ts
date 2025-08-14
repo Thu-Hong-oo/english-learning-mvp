@@ -280,6 +280,27 @@ class ApiService {
     });
   }
 
+  // Post Methods
+  async createPost(data: any): Promise<ApiResponse> {
+    return this.request('/api/posts', {
+      method: HTTP_METHODS.POST,
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePost(id: string, data: any): Promise<ApiResponse> {
+    return this.request(`/api/posts/${id}`, {
+      method: HTTP_METHODS.PUT,
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePost(id: string): Promise<ApiResponse> {
+    return this.request(`/api/posts/${id}`, {
+      method: HTTP_METHODS.DELETE,
+    });
+  }
+
   // Comments Methods
   async getComments(contentType: string, contentId: string): Promise<ApiResponse> {
     return this.request(`/api/comments?contentType=${contentType}&contentId=${contentId}`, {

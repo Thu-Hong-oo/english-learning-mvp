@@ -39,11 +39,39 @@ export const getPostBySlug = async (req: Request, res: Response) => {
 
 export const createPost = async (req: AuthRequest, res: Response) => {
   try {
+    console.log('createPost - req.user:', req.user);
+    console.log('createPost - req.body:', req.body);
+    
     if (!req.user) return res.status(401).json({ success: false, message: 'Unauthorized' })
+    
     const { title, slug, excerpt, content, coverImage, tags, category, status, language, readingTime, publishedAt } = req.body
-    const post = await Post.create({ authorId: req.user.userId, title, slug, excerpt, content, coverImage, tags, category, status, language, readingTime, publishedAt })
+    
+    console.log('createPost - extracted data:', { title, slug, excerpt, content, coverImage, tags, category, status, language, readingTime, publishedAt });
+    
+    const postData = { 
+      authorId: req.user.userId, 
+      title, 
+      slug, 
+      excerpt, 
+      content, 
+      coverImage, 
+      tags, 
+      category, 
+      status, 
+      language, 
+      readingTime, 
+      publishedAt 
+    };
+    
+    console.log('createPost - postData:', postData);
+    
+    const post = await Post.create(postData)
+    
+    console.log('createPost - created post:', post);
+    
     res.status(201).json({ success: true, message: 'Post created', data: post })
   } catch (err) {
+    console.error('createPost - error:', err);
     res.status(500).json({ success: false, message: 'Internal server error' })
   }
 }

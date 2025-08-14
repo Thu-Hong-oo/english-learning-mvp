@@ -4,6 +4,10 @@ import { useAppSelector } from '../store/hooks';
 import { apiService } from '../services/api';
 import { Save, X, Eye, EyeOff, Tag, Image as ImageIcon } from 'lucide-react';
 
+// Debug: Check if apiService is imported correctly
+console.log('PostForm - apiService imported:', apiService);
+console.log('PostForm - apiService.createPost:', apiService?.createPost);
+
 interface PostFormProps {
   mode: 'create' | 'edit';
 }
@@ -111,6 +115,9 @@ const PostForm: React.FC<PostFormProps> = ({ mode }) => {
     try {
       setLoading(true);
       setError(null);
+
+      console.log('apiService:', apiService);
+      console.log('apiService.createPost:', apiService.createPost);
 
       let response;
       if (mode === 'create') {
