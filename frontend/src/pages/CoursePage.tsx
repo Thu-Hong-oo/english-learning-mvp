@@ -127,10 +127,7 @@ export default function CoursePage() {
               console.error('❌ Teacher lessons response not ok:', lessonsResponse.message);
             }
           } else {
-            // Students can only see published lessons
-            console.log('👨‍🎓 Fetching published lessons for student...');
-            console.log('🔗 API URL:', `http://localhost:3000/api/lessons/course/${id}/public`);
-            
+         
             try {
               const lessonsResponse = await apiService.getLessonsByCoursePublic(id);
               console.log('📡 Response status:', lessonsResponse.success);

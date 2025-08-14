@@ -31,6 +31,15 @@ const API_ENDPOINTS = {
     UPDATE: '/api/posts/:id',
     DELETE: '/api/posts/:id',
   },
+  COMMENTS: {
+    LIST: '/api/comments',
+    CREATE: '/api/comments',
+    UPDATE: '/api/comments/:id',
+    DELETE: '/api/comments/:id',
+    LIKE: '/api/comments/:id/like',
+    DISLIKE: '/api/comments/:id/dislike',
+    REPORT: '/api/comments/:id/report',
+  },
   LESSONS: {
     LIST: '/api/lessons',
     BY_COURSE: '/api/lessons/course/:courseId',
@@ -262,6 +271,56 @@ class ApiService {
     const endpoint = API_ENDPOINTS.POSTS.DETAIL.replace(':id', id);
     return this.request(endpoint, {
       method: HTTP_METHODS.GET,
+    });
+  }
+
+  // Comments Methods
+  async getComments(postId: string): Promise<ApiResponse> {
+    return this.request(`${API_ENDPOINTS.POSTS.DETAIL.replace(':id', postId)}/comments`, {
+      method: HTTP_METHODS.GET,
+    });
+  }
+
+  async createComment(postId: string, data: any): Promise<ApiResponse> {
+    return this.request(`${API_ENDPOINTS.POSTS.DETAIL.replace(':id', postId)}/comments`, {
+      method: HTTP_METHODS.POST,
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateComment(id: string, data: any): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COMMENTS.UPDATE.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.PUT,
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteComment(id: string): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COMMENTS.DELETE.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.DELETE,
+    });
+  }
+
+  async likeComment(id: string): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COMMENTS.LIKE.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.POST,
+    });
+  }
+
+  async dislikeComment(id: string): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COMMENTS.DISLIKE.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.POST,
+    });
+  }
+
+  async reportComment(id: string): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COMMENTS.REPORT.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.POST,
     });
   }
 

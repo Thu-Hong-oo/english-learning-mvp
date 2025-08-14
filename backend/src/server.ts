@@ -8,7 +8,7 @@ import lessonRoutes from './routes/lessonRoutes';
 import adminRoutes from './routes/adminRoutes';
 import instructorRoutes from './routes/instructorRoutes';
 import postRoutes from './routes/postRoutes';
-
+import commentRoutes from './routes/commentRoutes';
 
 
 // Load environment variables
@@ -53,6 +53,7 @@ app.use('/api/lessons', lessonRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/instructor', instructorRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 
 
 app.get('/', (req: Request, res: Response) => {

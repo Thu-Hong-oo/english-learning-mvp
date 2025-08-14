@@ -71,8 +71,18 @@ export default function LearnPage() {
         const courseData = courseResponse;
         
         if (courseData.success) {
-          // Fetch published lessons for students
-          const lessonsResponse = await apiService.getLessonsByCoursePublic(courseId);
+          // Fetch lessons based on user role
+          let lessonsResponse;
+          
+          if (user?.role === 'teacher') {
+            // Teacher can see all lessons (including drafts)
+            console.log('👨‍🏫 Fetching all lessons for teacher...');
+            lessonsResponse = await apiService.getLessonsByCourse(courseId);
+          } else {
+            // Students can only see published lessons
+            console.log('👨‍🎓 Fetching published lessons for student...');
+            lessonsResponse = await apiService.getLessonsByCoursePublic(courseId);
+          }
           
           if (lessonsResponse.success) {
             const lessonsData = lessonsResponse.data.sort((a: Lesson, b: Lesson) => a.order - b.order);
@@ -93,12 +103,16 @@ export default function LearnPage() {
             } else if (lessonsData.length > 0) {
               setCurrentLesson(lessonsData[0]);
             }
+          } else {
+            console.log('❌ Lessons response not successful:', lessonsResponse);
+            setCourseData({
+              ...courseData.data,
+              lessons: []
+            });
           }
         } else {
-          setCourseData({
-            ...courseData.data,
-            lessons: []
-          });
+          console.log('❌ Course response not successful:', courseData);
+          setError('Không thể tải thông tin khóa học');
         }
       } catch (error) {
         console.error('Error fetching course data:', error);
