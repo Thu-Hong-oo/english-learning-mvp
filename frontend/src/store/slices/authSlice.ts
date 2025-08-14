@@ -181,26 +181,6 @@ const authSlice = createSlice({
       state.loading = action.payload;
     },
 
-    // Action xử lý Google OAuth thành công
-    googleAuthSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      console.log('googleAuthSuccess reducer called with:', action.payload);
-      
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      state.isAuthenticated = true;
-      state.error = null;
-      state.loading = false;
-      
-      console.log('Updated state:', {
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        token: state.token
-      });
-      
-      // Set token cho apiService
-      apiService.setAuthToken(action.payload.token);
-    },
-
     // Action xử lý đăng nhập Google thành công
     googleAuthSuccess: (state, action: PayloadAction<{ token: string; user: User }>) => {
       state.token = action.payload.token;

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '../ui/card'
 import { useNavigate } from 'react-router-dom'
 const articles = [

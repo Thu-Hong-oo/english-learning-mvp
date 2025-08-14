@@ -1,4 +1,4 @@
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 import { Palette, Code, MessageCircle, Video, Camera, TrendingUp, FileText, DollarSign, Atom, Network } from 'lucide-react'
 
 const categories = [

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, } from '../ui/card'
 import { Clock, Users, Star, Plus, Play, BookOpen } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, Search, Menu, X, LogIn, User, LogOut, Settings, BookOpen, Shield } from "lucide-react";
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button'
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
