@@ -8,12 +8,12 @@ export interface Course {
   title: string;
   description: string;
   level: 'beginner' | 'intermediate' | 'advanced';
-  category: 'grammar' | 'vocabulary' | 'listening' | 'speaking' | 'reading' | 'writing' | 'general';
+  category: 'TOEIC' | 'IELTS' | 'TOEFL' | 'Cambridge' | 'Business English' | 'General English' | 'Conversation' | 'Grammar' | 'Vocabulary' | 'Pronunciation';
   thumbnail?: string;
   duration: number;
   lessonsCount: number;
   isPublished: boolean;
-  teacher: string;
+  teacher: any; // Will be populated with teacher info
   lessons: string[];
   tags: string[];
   difficulty: number;
@@ -23,6 +23,7 @@ export interface Course {
   requirements?: string[];
   objectives?: string[];
   status: 'draft' | 'published' | 'archived';
+  adminApproval: 'pending' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt: string;
 }
@@ -64,13 +65,19 @@ export const fetchFeaturedCourses = createAsyncThunk(
     try {
       // Fetch all courses and filter for featured ones
       const response = await apiService.getCourses();
+      console.log('API Response:', response); // Debug log
+      
       // Extract data from ApiResponse with proper typing
-      const apiResponse = response as ApiResponse<Course[]>;
-      if (apiResponse && apiResponse.data && Array.isArray(apiResponse.data)) {
+      const apiResponse = response as ApiResponse<{items: Course[], pagination: any}>;
+      
+      if (apiResponse && apiResponse.data && apiResponse.data.items && Array.isArray(apiResponse.data.items)) {
+        return apiResponse.data.items;
+      } else if (apiResponse && apiResponse.data && Array.isArray(apiResponse.data)) {
         return apiResponse.data;
       }
       return [];
     } catch (error: any) {
+      console.error('Error fetching featured courses:', error); // Debug log
       return rejectWithValue(error.message || 'Failed to fetch featured courses');
     }
   }

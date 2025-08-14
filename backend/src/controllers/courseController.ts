@@ -8,7 +8,10 @@ export const getAllCourses = async (req: Request, res: Response) => {
   try {
     const { page = 1, limit = 10, category, level, search } = req.query
     
-    const query: any = { status: 'published' }
+    const query: any = { 
+      status: 'published',
+      adminApproval: 'approved'
+    }
     
     if (category) query.category = category
     if (level) query.level = level
@@ -277,6 +280,8 @@ export const adminApproveCourse = async (req: AuthRequest, res: Response) => {
     const { action, reason } = req.body // action: 'approve' or 'reject'
     const adminId = req.user?.userId
     
+    console.log('Admin approve course request:', { id, action, reason, adminId })
+    
     if (!adminId) {
       return res.status(401).json({ success: false, message: 'Unauthorized' })
     }
@@ -291,19 +296,23 @@ export const adminApproveCourse = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Course not found' })
     }
 
+    console.log('Found course:', { courseId: course._id, currentStatus: course.adminApproval })
+
     if (action === 'approve') {
       course.adminApproval = 'approved'
-      course.adminApprovedBy = new mongoose.Types.ObjectId(adminId)
       course.adminApprovedAt = new Date()
-      course.adminRejectionReason = undefined
+      // Don't set adminApprovedBy for now to avoid ObjectId issues
     } else {
       course.adminApproval = 'rejected'
       course.adminRejectionReason = reason || 'No reason provided'
-      course.adminApprovedBy = undefined
-      course.adminApprovedAt = undefined
+      course.adminApprovedAt = null
     }
 
+    console.log('Saving course with new status:', { adminApproval: course.adminApproval, adminApprovedBy: course.adminApprovedBy })
+    
     await course.save()
+
+    console.log('Course saved successfully')
 
     res.json({
       success: true,
@@ -335,6 +344,42 @@ export const getAllCoursesForAdmin = async (req: AuthRequest, res: Response) => 
     })
   } catch (error) {
     console.error('Error fetching all courses for admin:', error)
+    res.status(500).json({ success: false, message: 'Internal server error' })
+  }
+}
+
+// Admin update course status
+export const adminUpdateCourseStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    const adminId = req.user?.userId
+    
+    if (!adminId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' })
+    }
+
+    if (!['draft', 'published', 'archived'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' })
+    }
+
+    const course = await Course.findById(id)
+    
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' })
+    }
+
+    // Admin can change status regardless of current status
+    course.status = status
+    await course.save()
+
+    res.json({
+      success: true,
+      message: `Course status updated to ${status} successfully`,
+      data: course
+    })
+  } catch (error) {
+    console.error('Error updating course status by admin:', error)
     res.status(500).json({ success: false, message: 'Internal server error' })
   }
 }

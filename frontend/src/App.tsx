@@ -24,6 +24,10 @@ import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
 import CreateCourse from './pages/teacher/CreateCourse'
 import TeacherProfile from './pages/teacher/TeacherProfile'
+import CreateLesson from './pages/teacher/CreateLesson'
+import EditLesson from './pages/teacher/EditLesson'
+import CoursePreview from './pages/teacher/CoursePreview'
+import EditCourse from './pages/teacher/EditCourse'
 import InstructorApplicationPage from './pages/InstructorApplicationPage'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -80,6 +84,26 @@ export default function App() {
         <Route path="/teacher/profile" element={
           <ProtectedRoute allowedRoles={['teacher']}>
             <TeacherProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/courses/:courseId/lessons/create" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <CreateLesson />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/courses/:courseId/lessons/:lessonId/edit" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <EditLesson />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/courses/:courseId/preview" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <CoursePreview />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/courses/:courseId/edit" element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <EditCourse />
           </ProtectedRoute>
         } />
         <Route path="/instructor-application" element={<InstructorApplicationPage />} />

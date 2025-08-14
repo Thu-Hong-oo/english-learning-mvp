@@ -26,6 +26,10 @@ export default function FeaturedCourses() {
   const dispatch = useAppDispatch();
   const { featuredCourses, loading, error } = useAppSelector((state) => state.courses);
   const navigate = useNavigate()
+  
+  // Debug: Log the state
+  console.log('FeaturedCourses state:', { featuredCourses, loading, error });
+  
   // Fetch featured courses when component mounts
   useEffect(() => {
     dispatch(fetchFeaturedCourses());
@@ -72,7 +76,8 @@ export default function FeaturedCourses() {
         </div>
 
                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                 {featuredCourses.map((course) => (
+                 {Array.isArray(featuredCourses) && featuredCourses.length > 0 ? (
+                   featuredCourses.map((course) => (
                    <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-shadow">
                      <div className="relative">
                        <img
@@ -120,7 +125,13 @@ export default function FeaturedCourses() {
                        </div>
                      </CardContent>
                    </Card>
-                 ))}
+                 ))
+                 ) : (
+                   <div className="col-span-full text-center py-12">
+                     <p className="text-gray-500 text-lg">Chưa có khóa học nào</p>
+                     <p className="text-gray-400 text-sm mt-2">Hãy quay lại sau khi có khóa học mới</p>
+                   </div>
+                 )}
                </div>
       </div>
     </section>

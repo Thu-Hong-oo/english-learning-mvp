@@ -375,11 +375,11 @@ export default function TeacherDashboard() {
                       </div>
                     </div>
                     <div className="flex space-x-2 mt-4">
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/teacher/courses/${course._id}/edit`)}>
                         <Edit className="w-4 h-4 mr-1" />
                         Chỉnh sửa
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/teacher/courses/${course._id}/preview`)}>
                         <Eye className="w-4 h-4 mr-1" />
                         Xem
                       </Button>

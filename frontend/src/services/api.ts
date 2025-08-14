@@ -21,7 +21,9 @@ const API_ENDPOINTS = {
     LIST: '/api/courses',
     DETAIL: '/api/courses/:id',
     ENROLL: '/api/courses/:id/enroll',
-  },
+    CREATE: '/api/courses',
+    UPDATE: '/api/courses/:id',},
+
 } as const;
 
 // HTTP Methods
@@ -201,6 +203,13 @@ class ApiService {
     });
   }
 
+  async createCourse(data: any): Promise<ApiResponse> {
+    return this.request(API_ENDPOINTS.COURSES.CREATE, {
+      method: HTTP_METHODS.POST,
+      body: JSON.stringify(data),
+    });
+  }
+
   // Utility Methods
   setAuthToken(token: string): void {
     localStorage.setItem('token', token);
@@ -225,6 +234,8 @@ class ApiService {
     window.location.href = '/login';
   }
 }
+
+
 
 // Create and export singleton instance
 export const apiService = new ApiService(API_BASE_URL);

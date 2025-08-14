@@ -21,9 +21,9 @@ export interface ICourse extends Document {
     objectives?: string[];
     status: 'draft' | 'published' | 'archived';
     adminApproval: 'pending' | 'approved' | 'rejected';
-    adminApprovedBy?: mongoose.Types.ObjectId;
-    adminApprovedAt?: Date;
-    adminRejectionReason?: string;
+    adminApprovedBy?: mongoose.Types.ObjectId | null;
+    adminApprovedAt?: Date | null;
+    adminRejectionReason?: string | null;
     createdAt: Date;
     updatedAt: Date;
 }

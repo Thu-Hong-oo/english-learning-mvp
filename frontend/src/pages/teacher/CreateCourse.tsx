@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Textarea } from '../../components/ui/textarea'
 import { Badge } from '../../components/ui/badge'
 import { ArrowLeft, Upload, Save, Eye } from 'lucide-react'
+import { apiService } from '../../services/api';
 
 interface CourseForm {
   title: string
@@ -103,22 +104,13 @@ export default function CreateCourse() {
         lessonsCount: 0
       }
 
-      const response = await fetch('http://localhost:3000/api/courses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(courseData)
-      })
+      const response = await apiService.createCourse(courseData);
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (response.success) {
         alert('Khóa học đã được tạo thành công!')
         navigate('/teacher')
       } else {
-        alert(data.message || 'Có lỗi xảy ra khi tạo khóa học')
+        alert( 'Có lỗi xảy ra khi tạo khóa học')
       }
     } catch (error) {
       console.error('Error creating course:', error)

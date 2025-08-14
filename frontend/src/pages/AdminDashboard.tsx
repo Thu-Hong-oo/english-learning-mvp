@@ -11,7 +11,9 @@ import {
   XCircle, 
   Eye,
   MessageSquare,
-  TrendingUp
+  TrendingUp,
+  AlertTriangle,
+  Info
 } from 'lucide-react'
 
 interface InstructorApplication {
@@ -51,12 +53,112 @@ interface Course {
   createdAt: string
 }
 
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  message: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  onConfirm?: () => void
+  confirmText?: string
+  cancelText?: string
+}
+
+function Modal({ isOpen, onClose, title, message, type, onConfirm, confirmText = 'OK', cancelText = 'Cancel' }: ModalProps) {
+  if (!isOpen) return null
+
+  const getIcon = () => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-6 h-6 text-green-500" />
+      case 'error':
+        return <XCircle className="w-6 h-6 text-red-500" />
+      case 'warning':
+        return <AlertTriangle className="w-6 h-6 text-yellow-500" />
+      case 'info':
+        return <Info className="w-6 h-6 text-blue-500" />
+    }
+  }
+
+  const getButtonColor = () => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-600 hover:bg-green-700'
+      case 'error':
+        return 'bg-red-600 hover:bg-red-700'
+      case 'warning':
+        return 'bg-yellow-600 hover:bg-yellow-700'
+      case 'info':
+        return 'bg-blue-600 hover:bg-blue-700'
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="flex items-center space-x-3 mb-4">
+          {getIcon()}
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        </div>
+        <p className="text-gray-600 mb-6">{message}</p>
+        <div className="flex justify-end space-x-3">
+          {onConfirm && (
+            <Button variant="outline" onClick={onClose}>
+              {cancelText}
+            </Button>
+          )}
+          <Button 
+            onClick={onConfirm || onClose}
+            className={onConfirm ? getButtonColor() : 'bg-gray-600 hover:bg-gray-700'}
+          >
+            {confirmText}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const [applications, setApplications] = useState<InstructorApplication[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [modal, setModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'success' | 'error' | 'warning' | 'info'
+    onConfirm?: () => void
+    confirmText?: string
+    cancelText?: string
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  })
+
+  const showModal = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info', onConfirm?: () => void, confirmText?: string, cancelText?: string) => {
+    setModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+      onConfirm,
+      confirmText,
+      cancelText
+    })
+  }
+
+  const showSuccessModal = (title: string, message: string, onConfirm?: () => void) => {
+    showModal(title, message, 'success', onConfirm, 'OK');
+  }
+
+  const closeModal = () => {
+    setModal(prev => ({ ...prev, isOpen: false }))
+  }
 
   useEffect(() => {
     fetchData()
@@ -85,13 +187,13 @@ export default function AdminDashboard() {
         console.error('Failed to fetch applications:', appsData.message)
       }
       
-                if (coursesData.success) {
-            console.log('Courses data:', coursesData.data)
-            setCourses(Array.isArray(coursesData.data) ? coursesData.data : [])
-          } else {
-            console.error('Failed to fetch courses:', coursesData.message)
-            setCourses([])
-          }
+      if (coursesData.success) {
+        console.log('Courses data:', coursesData.data)
+        setCourses(Array.isArray(coursesData.data) ? coursesData.data : [])
+      } else {
+        console.error('Failed to fetch courses:', coursesData.message)
+        setCourses([])
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       setError('Có lỗi xảy ra khi tải dữ liệu')
@@ -114,17 +216,30 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         const result = await response.json();
-        alert(result.message); // Hiển thị thông báo
-        fetchData(); // Refresh data
-        
-        // Nếu approve, thông báo cho user biết cần đăng xuất/đăng nhập lại
-        if (action === 'approve') {
-          alert('Lưu ý: User đã được cập nhật role thành teacher. Họ cần đăng xuất và đăng nhập lại để nhận quyền mới.');
-        }
+                                   showSuccessModal(
+            'Thành công',
+            result.message,
+            () => {
+              fetchData();
+              closeModal();
+              if (action === 'approve') {
+                setTimeout(() => {
+                  showModal(
+                    'Lưu ý',
+                    'User đã được cập nhật role thành teacher. Họ cần đăng xuất và đăng nhập lại để nhận quyền mới.',
+                    'info'
+                  );
+                }, 300);
+              }
+            }
+          );
+      } else {
+        const errorData = await response.json();
+        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi duyệt đơn đăng ký', 'error');
       }
     } catch (error) {
       console.error('Error reviewing application:', error)
-      alert('Có lỗi xảy ra khi duyệt đơn đăng ký')
+      showModal('Lỗi', 'Có lỗi xảy ra khi duyệt đơn đăng ký', 'error');
     }
   }
 
@@ -147,22 +262,28 @@ export default function AdminDashboard() {
       })
       
       if (response.ok) {
-        alert(`Khóa học đã được ${action === 'approve' ? 'duyệt' : 'từ chối'} thành công!`)
-        fetchData() // Refresh data
+        showSuccessModal(
+          'Thành công',
+          `Khóa học đã được ${action === 'approve' ? 'duyệt' : 'từ chối'} thành công!`,
+          () => {
+            fetchData();
+            closeModal();
+          }
+        );
       } else {
         const errorData = await response.json()
-        alert(`Lỗi: ${errorData.message}`)
+        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi duyệt khóa học', 'error');
       }
     } catch (error) {
       console.error('Error approving course:', error)
-      alert('Có lỗi xảy ra khi duyệt khóa học')
+      showModal('Lỗi', 'Có lỗi xảy ra khi duyệt khóa học', 'error');
     }
   }
 
   const handleCourseStatus = async (id: string, status: 'draft' | 'published' | 'archived') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/courses/${id}/status`, {
+      const response = await fetch(`http://localhost:3000/api/courses/${id}/admin-status`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -172,15 +293,22 @@ export default function AdminDashboard() {
       })
       
       if (response.ok) {
-        alert(`Khóa học đã được cập nhật trạng thái thành ${status === 'published' ? 'xuất bản' : status === 'archived' ? 'lưu trữ' : 'bản nháp'}!`)
-        fetchData() // Refresh data
+        const statusText = status === 'published' ? 'xuất bản' : status === 'archived' ? 'lưu trữ' : 'bản nháp';
+        showSuccessModal(
+          'Thành công',
+          `Khóa học đã được cập nhật trạng thái thành ${statusText}!`,
+          () => {
+            fetchData();
+            closeModal();
+          }
+        );
       } else {
         const errorData = await response.json()
-        alert(`Lỗi: ${errorData.message}`)
+        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi cập nhật trạng thái khóa học', 'error');
       }
     } catch (error) {
       console.error('Error updating course status:', error)
-      alert('Có lỗi xảy ra khi cập nhật trạng thái khóa học')
+      showModal('Lỗi', 'Có lỗi xảy ra khi cập nhật trạng thái khóa học', 'error');
     }
   }
 
@@ -561,6 +689,18 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={closeModal}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm}
+        confirmText={modal.confirmText}
+        cancelText={modal.cancelText}
+      />
     </div>
   )
 }
