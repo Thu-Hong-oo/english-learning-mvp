@@ -4,8 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Plus, X, BookOpen, Video, FileText, Headphones, CheckCircle } from 'lucide-react';
 import { apiService } from '../../services/api';
 
 interface LessonFormData {
@@ -63,17 +64,17 @@ export default function CreateLesson() {
 
   const fetchCourseDetails = async () => {
     try {
-      const response = await apiService.getCourseDetail(courseId!);
-      if (response.success) {
-        setCourse(response.data);
-        // Set order to next available number
-        setFormData(prev => ({
-          ...prev,
-          order: (response.data.lessons?.length || 0) + 1
-        }));
+      const response = await apiService.getCourseDetail(courseId || '');
+      const data = response;
+
+      if (data.success) {
+        setCourse(data.data);
+      } else {
+        alert('Không thể tải thông tin khóa học');
       }
     } catch (error) {
       console.error('Error fetching course:', error);
+      alert('Có lỗi xảy ra khi tải khóa học');
     }
   };
 
@@ -111,22 +112,13 @@ export default function CreateLesson() {
 
       console.log('Sending data to backend:', dataToSend);
 
-      const response = await fetch(`http://localhost:3000/api/lessons`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await apiService.createLesson(dataToSend);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.success) {
         alert('Bài học đã được tạo thành công!');
         navigate(`/teacher/courses/${courseId}/preview`);
       } else {
-        alert('Lỗi: ' + data.message);
+        alert('Lỗi: ' + response.message);
       }
     } catch (error) {
       console.error('Error creating lesson:', error);

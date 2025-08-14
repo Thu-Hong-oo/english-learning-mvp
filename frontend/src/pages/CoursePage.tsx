@@ -1,8 +1,9 @@
 
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { Star, Users, BookOpen, Clock, Award, Plus, Play, Lock } from "lucide-react"
-import { useAppSelector } from "../store/hooks"
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useAppSelector } from '../store/hooks'
+import { Star, Clock, Users, BookOpen, Play, Eye, Edit, Trash, CheckCircle, XCircle, Plus, Video, FileText, Headphones } from 'lucide-react'
+import { apiService } from '../services/api'
 import { Button } from "../components/ui/button"
 
 interface Lesson {
@@ -77,14 +78,7 @@ export default function CoursePage() {
 
   const handleToggleLessonStatus = async (lessonId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}/toggle-status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      const data = await response.json();
+      const data = await apiService.toggleLessonStatus(lessonId);
 
       if (data.success) {
         // Refresh the page to show updated status
@@ -108,31 +102,29 @@ export default function CoursePage() {
 
       try {
         // Fetch course data
-        const courseResponse = await fetch(`http://localhost:3000/api/courses/${id}`);
-        const courseData = await courseResponse.json();
-
+        const courseResponse = await apiService.getCourseDetail(id);
+        const courseData = courseResponse;
+        
         if (courseData.success) {
+          setCourseData(courseData.data);
+          
           // Fetch lessons for this course based on user role
           let lessons = [];
-          console.log('🔍 Fetching lessons for user role:', user?.role);
+          console.log('Fetching lessons for user role:', user?.role);
           
           if (user?.role === 'teacher') {
             // Teacher can see all lessons (including drafts)
-            console.log('👨‍🏫 Fetching all lessons for teacher...');
-            const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}`, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              }
-            });
+            console.log('Fetching all lessons for teacher...');
+            const lessonsResponse = await apiService.getLessonsByCourse(id);
             
-            if (lessonsResponse.ok) {
-              const lessonsData = await lessonsResponse.json();
+            if (lessonsResponse.success) {
+              const lessonsData = lessonsResponse;
               console.log('📚 Teacher lessons response:', lessonsData);
               if (lessonsData.success) {
                 lessons = lessonsData.data;
               }
             } else {
-              console.error('❌ Teacher lessons response not ok:', lessonsResponse.status);
+              console.error('❌ Teacher lessons response not ok:', lessonsResponse.message);
             }
           } else {
             // Students can only see published lessons
@@ -140,12 +132,12 @@ export default function CoursePage() {
             console.log('🔗 API URL:', `http://localhost:3000/api/lessons/course/${id}/public`);
             
             try {
-              const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${id}/public`);
-              console.log('📡 Response status:', lessonsResponse.status);
-              console.log('📡 Response ok:', lessonsResponse.ok);
+              const lessonsResponse = await apiService.getLessonsByCoursePublic(id);
+              console.log('📡 Response status:', lessonsResponse.success);
+              console.log('📡 Response ok:', lessonsResponse.success);
               
-              if (lessonsResponse.ok) {
-                const lessonsData = await lessonsResponse.json();
+              if (lessonsResponse.success) {
+                const lessonsData = lessonsResponse;
                 console.log('📚 Student lessons response:', lessonsData);
                 if (lessonsData.success) {
                   lessons = lessonsData.data;
@@ -154,8 +146,8 @@ export default function CoursePage() {
                   console.error('❌ Lessons response not successful:', lessonsData);
                 }
               } else {
-                console.error('❌ Student lessons response not ok:', lessonsResponse.status);
-                const errorText = await lessonsResponse.text();
+                console.error('❌ Student lessons response not ok:', lessonsResponse.message);
+                const errorText = lessonsResponse.message;
                 console.error('❌ Error response body:', errorText);
               }
             } catch (fetchError) {
@@ -165,19 +157,17 @@ export default function CoursePage() {
           
           console.log('📖 Final lessons array:', lessons);
           console.log('📊 Lessons length:', lessons.length);
-          console.log('🔍 Course ID being fetched:', id);
-          console.log('👤 User role:', user?.role);
-
+          
+          // Update course data with lessons
           setCourseData({
             ...courseData.data,
             lessons: lessons
           });
         } else {
-          setError(courseData.message || 'Failed to fetch course data');
+          console.error('Failed to fetch course:', courseData.message);
         }
       } catch (error) {
-        console.error('Error fetching course:', error);
-        setError('Failed to fetch course data');
+        console.error('Error fetching course data:', error);
       } finally {
         setLoading(false);
       }
@@ -361,26 +351,7 @@ export default function CoursePage() {
                     </span>
                   </div>
                   
-                  {/* Test button */}
-                  <Button
-                    onClick={() => {
-                      console.log('Testing API...');
-                      fetch(`http://localhost:3000/api/lessons/${courseData.lessons?.[0]?._id}/toggle-status`, {
-                        method: 'PATCH',
-                        headers: {
-                          'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                      })
-                      .then(res => res.json())
-                      .then(data => console.log('API Response:', data))
-                      .catch(err => console.error('API Error:', err));
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
-                  >
-                    🧪 Test API
-                  </Button>
+                  
                 </div>
               )}
          
@@ -418,13 +389,7 @@ export default function CoursePage() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          {/* Debug info */}
-                          {isTeacher && (
-                            <span className="text-xs text-red-500">
-                              Teacher: {user?._id} | Course Teacher: {courseData?.teacher?._id}
-                            </span>
-                          )}
-                          
+                                                   
                           {isStudent ? (
                             <Button
                               onClick={() => handleStartLearning(lesson._id)}
@@ -457,7 +422,9 @@ export default function CoursePage() {
                               >
                                 {lesson.status === 'published' ? (
                                   <>
-                                    <Lock className="w-4 h-4 mr-2" />
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
                                     Ẩn
                                   </>
                                 ) : (

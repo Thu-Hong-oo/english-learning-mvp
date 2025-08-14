@@ -7,6 +7,7 @@ import { Textarea } from '../components/ui/textarea'
 import { Badge } from '../components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { useAppSelector } from '../store/hooks'
+import { apiService } from '../services/api'
 import { 
   User, 
   BookOpen, 
@@ -82,27 +83,17 @@ export default function TeacherDashboard() {
       const token = localStorage.getItem('token')
       
       // Fetch courses
-      const coursesResponse = await fetch('http://localhost:3000/api/courses/teacher', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const coursesResponse = await apiService.getCourses();
       
-      if (coursesResponse.ok) {
-        const coursesData = await coursesResponse.json()
-        setCourses(coursesData.data || [])
+      if (coursesResponse.success) {
+        setCourses(coursesResponse.data || []);
       }
 
       // Fetch lessons
-      const lessonsResponse = await fetch('http://localhost:3000/api/lessons/teacher', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const lessonsResponse = await apiService.getLessonsByTeacher();
       
-      if (lessonsResponse.ok) {
-        const lessonsData = await lessonsResponse.json()
-        setLessons(lessonsData.data || [])
+      if (lessonsResponse.success) {
+        setLessons(lessonsResponse.data || []);
       }
 
       // Calculate stats

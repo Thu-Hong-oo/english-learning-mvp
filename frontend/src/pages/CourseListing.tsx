@@ -3,6 +3,7 @@
 import { useState, useEffect, type ReactNode } from "react"
 import { Search, Grid, List, Star, ChevronLeft, ChevronRight, Play, Eye, Clock, Users, BookOpen, DollarSign } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { apiService } from "../services/api"
 
 type Course = {
   _id: string
@@ -107,7 +108,7 @@ const CourseCard = ({ course, onViewDetails, onStartLearning }: {
           ) : (
             <>
               <DollarSign className="w-4 h-4 text-gray-500" />
-              <span className="text-lg font-bold text-gray-900">${course.price}</span>
+          <span className="text-lg font-bold text-gray-900">${course.price}</span>
             </>
           )}
         </div>
@@ -199,8 +200,8 @@ export default function CourseListing() {
     const fetchCourses = async () => {
       try {
         setLoading(true)
-        const response = await fetch('http://localhost:3000/api/courses')
-        const data = await response.json()
+        const response = await apiService.getCourses()
+        const data = response
         
         console.log('🔍 API Response:', data)
         console.log('🔍 Data structure:', typeof data, data)
@@ -452,7 +453,7 @@ export default function CourseListing() {
 
             {/* Course Grid */}
             {filteredCourses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {filteredCourses.map((course) => (
                   <CourseCard 
                     key={course._id} 
@@ -460,8 +461,8 @@ export default function CourseListing() {
                     onViewDetails={handleViewDetails}
                     onStartLearning={handleStartLearning}
                   />
-                ))}
-              </div>
+              ))}
+            </div>
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
@@ -474,8 +475,8 @@ export default function CourseListing() {
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
                   Xóa tất cả bộ lọc
-                </button>
-              </div>
+              </button>
+            </div>
             )}
           </div>
 

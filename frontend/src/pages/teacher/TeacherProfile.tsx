@@ -1,11 +1,22 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
-import { Textarea } from '../../components/ui/textarea'
-import { Badge } from '../../components/ui/badge'
-import { ArrowLeft, Save, User, Mail, Phone, MapPin, Award, BookOpen } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import { apiService } from '../../services/api';
+import { 
+  ArrowLeft, 
+  User, 
+  Mail, 
+  Phone, 
+  Calendar, 
+  MapPin, 
+  BookOpen,
+  Award,
+  CheckCircle
+} from 'lucide-react';
 import { useAppSelector } from '../../store/hooks'
 
 interface ProfileForm {
@@ -60,42 +71,30 @@ export default function TeacherProfile() {
 
   const fetchProfile = async () => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('token')
-      
-      const response = await fetch('http://localhost:3000/api/auth/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          const profile = data.data
-          setFormData({
-            fullName: profile.fullName || '',
-            email: profile.email || '',
-            phone: profile.phone || '',
-            bio: profile.bio || '',
-            location: profile.location || '',
-            website: profile.website || '',
-            linkedin: profile.linkedin || '',
-            github: profile.github || '',
-            expertise: profile.expertise || [],
-            education: profile.education || '',
-            experience: profile.experience || '',
-            certifications: profile.certifications || [],
-            languages: profile.languages || []
-          })
-        }
+      const response = await apiService.getUserProfile();
+
+      if (response.success) {
+        const profile = response.data;
+        setFormData({
+          fullName: profile.fullName || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          bio: profile.bio || '',
+          location: profile.location || '',
+          website: profile.website || '',
+          linkedin: profile.linkedin || '',
+          github: profile.github || '',
+          expertise: profile.expertise || [],
+          education: profile.education || '',
+          experience: profile.experience || '',
+          certifications: profile.certifications || [],
+          languages: profile.languages || []
+        });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
+      console.error('Error fetching profile:', error);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof ProfileForm, value: any) => {
     setFormData(prev => ({
@@ -138,27 +137,17 @@ export default function TeacherProfile() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
+    e.preventDefault();
+    setSaving(true);
 
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3000/api/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      })
+      const response = await apiService.updateUserProfile(formData);
 
-      const data = await response.json()
-
-      if (data.success) {
-        alert('Hồ sơ đã được cập nhật thành công!')
-        navigate('/teacher')
+      if (response.success) {
+        alert('Hồ sơ đã được cập nhật thành công!');
+        navigate('/teacher');
       } else {
-        alert(data.message || 'Có lỗi xảy ra khi cập nhật hồ sơ')
+        alert(response.message || 'Có lỗi xảy ra khi cập nhật hồ sơ');
       }
     } catch (error) {
       console.error('Error updating profile:', error)
@@ -195,9 +184,9 @@ export default function TeacherProfile() {
               <User className="w-6 h-6" />
               Chỉnh sửa hồ sơ
             </CardTitle>
-            <CardDescription>
+            <p className="text-sm text-gray-600">
               Cập nhật thông tin cá nhân và chuyên môn của bạn
-            </CardDescription>
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -436,7 +425,7 @@ export default function TeacherProfile() {
                   Hủy
                 </Button>
                 <Button type="submit" disabled={saving}>
-                  <Save className="w-4 h-4 mr-2" />
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </Button>
               </div>

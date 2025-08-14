@@ -81,9 +81,9 @@ export default function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFor
             
             // Thông báo thành công
             if (isNewUser) {
-              alert(`🎉 Chào mừng ${user.fullName}! Tài khoản đã được tạo thành công với Google.`);
+              alert(`Chào mừng ${user.fullName}! Tài khoản đã được tạo thành công với Google.`);
             } else {
-              alert(`👋 Chào mừng trở lại ${user.fullName}!`);
+              alert(`Chào mừng trở lại ${user.fullName}!`);
             }
             
             // Redirect về homepage

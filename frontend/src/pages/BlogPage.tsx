@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '../components/ui/card'
 import { Button } from '../components/ui/button'
+import { apiService } from '../services/api'
 import { Search, Clock, Eye, Heart, MessageCircle } from 'lucide-react'
 
 interface Post {
@@ -45,10 +46,9 @@ export default function BlogPage() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/posts?status=published')
-      const data = await response.json()
-      if (data.success) {
-        setPosts(data.data.items)
+      const response = await apiService.getPosts({ status: 'published' })
+      if (response.success) {
+        setPosts(response.data.items)
       }
     } catch (error) {
       console.error('Error fetching posts:', error)

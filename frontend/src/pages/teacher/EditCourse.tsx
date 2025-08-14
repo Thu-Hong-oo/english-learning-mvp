@@ -5,7 +5,18 @@ import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { apiService } from '../../services/api';
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  BookOpen, 
+  Tag, 
+  Target, 
+  FileText,
+  Upload,
+  CheckCircle
+} from 'lucide-react';
 
 interface CourseFormData {
   title: string;
@@ -48,28 +59,11 @@ export default function EditCourse() {
 
   const fetchCourseDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/courses/${courseId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      const response = await apiService.getCourseDetail(courseId || '');
+      const data = response;
 
       if (data.success) {
-        setCourse(data.data);
-        setFormData({
-          title: data.data.title || '',
-          description: data.data.description || '',
-          level: data.data.level || 'intermediate',
-          category: data.data.category || 'General English',
-          thumbnail: data.data.thumbnail || '',
-          duration: data.data.duration || 0,
-          price: data.data.price || 0,
-          tags: data.data.tags || [],
-          requirements: data.data.requirements || [],
-          objectives: data.data.objectives || [],
-          difficulty: data.data.difficulty || 1
-        });
+        setFormData(data.data);
       } else {
         alert('Không thể tải thông tin khóa học');
       }
@@ -99,22 +93,14 @@ export default function EditCourse() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/api/courses/${courseId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
+      const response = await apiService.updateCourse(courseId || '', formData);
+      const data = response;
 
       if (data.success) {
         alert('Khóa học đã được cập nhật thành công!');
-        navigate(`/teacher/courses/${courseId}/preview`);
+        navigate('/teacher/dashboard');
       } else {
-        alert('Lỗi: ' + data.message);
+        alert('Lỗi: ' + (data.message || 'Không thể cập nhật khóa học'));
       }
     } catch (error) {
       console.error('Error updating course:', error);
@@ -329,7 +315,7 @@ export default function EditCourse() {
                       {loading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       ) : (
-                        <Save className="w-4 h-4 mr-2" />
+                        <CheckCircle className="w-4 h-4 mr-2" />
                       )}
                       Cập nhật khóa học
                     </Button>
@@ -344,7 +330,7 @@ export default function EditCourse() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Eye className="w-4 h-4 mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2" />
                   Xem trước
                 </CardTitle>
               </CardHeader>

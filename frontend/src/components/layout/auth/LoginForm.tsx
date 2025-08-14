@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Eye, EyeOff, Mail, Lock, Chrome } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { loginUser, clearError } from '../../../store/slices/authSlice';
-
+import { apiService } from '../../../services/api';
 interface LoginFormProps {
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
@@ -82,8 +82,7 @@ export default function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormPr
   const handleGoogleLogin = async () => {
     try {
       // Lấy Google auth URL từ backend
-      const response = await fetch('http://localhost:3000/api/auth/google');
-      const data = await response.json();
+      const data = await apiService.getGoogleAuthUrl();
       
       if (data.success && data.authUrl) {
         // Chuyển hướng đến Google OAuth

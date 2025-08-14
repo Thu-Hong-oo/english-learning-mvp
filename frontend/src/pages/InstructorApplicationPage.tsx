@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Textarea} from '../components/ui/textarea'
 import { Badge } from '../components/ui/badge'
 import { useAppSelector } from '../store/hooks'
+import { apiService } from '../services/api'
 import { User, BookOpen, Award, Link, Upload, CheckCircle, XCircle } from 'lucide-react'
 
 interface ApplicationForm {
@@ -75,20 +76,16 @@ export default function InstructorApplicationPage() {
 
   const checkExistingApplication = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/instructor/applications/me', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      const data = await response.json()
+      const response = await apiService.getInstructorApplications();
+      const data = response;
       
       if (data.success && data.data) {
-        setExistingApplication(data.data)
+        setExistingApplication(data.data);
       }
     } catch (error) {
-      console.error('Error checking existing application:', error)
+      console.error('Error checking existing application:', error);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof ApplicationForm, value: any) => {
     setFormData(prev => ({
@@ -122,90 +119,63 @@ export default function InstructorApplicationPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setErrors([])
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setErrors([]);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      }
+      const response = await apiService.applyInstructor(formData);
 
-      // Chỉ thêm Authorization header nếu user đã đăng nhập
-      if (isAuthenticated) {
-        const token = localStorage.getItem('token')
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`
-        }
-      }
-
-      const response = await fetch('http://localhost:3000/api/instructor/applications/public', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(formData)
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setSuccess(true)
+      if (response.success) {
+        setSuccess(true);
         // Lưu thông tin user để hiển thị
         setFormData(prev => ({
           ...prev,
-          email: data.data.user.email
-        }))
+          email: response.data?.user?.email || formData.email
+        }));
         // Hiển thị form OTP ngay lập tức
-        setShowOtpForm(true)
+        setShowOtpForm(true);
       } else {
         // Handle detailed validation errors
-        if (data.errors && Array.isArray(data.errors)) {
-          setErrors(data.errors)
-          setError(`Có ${data.errors.length} lỗi cần sửa:`)
+        if (response.data?.errors && Array.isArray(response.data.errors)) {
+          setErrors(response.data.errors);
+          setError(`Có ${response.data.errors.length} lỗi cần sửa:`);
         } else {
-          setError(data.message || 'Có lỗi xảy ra khi gửi đơn')
+          setError(response.message || 'Có lỗi xảy ra khi gửi đơn');
         }
       }
     } catch (error) {
-      setError('Có lỗi xảy ra khi gửi đơn. Vui lòng thử lại.')
+      setError('Có lỗi xảy ra khi gửi đơn. Vui lòng thử lại.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setOtpLoading(true)
-    setOtpError('')
+    e.preventDefault();
+    setOtpLoading(true);
+    setOtpError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          otp: otp
-        })
-      })
+      const response = await apiService.verifyEmail({
+        otp: otp
+      });
 
-      const data = await response.json()
-
-      if (data.success) {
-        setOtpSuccess(true)
-        setOtpError('')
+      if (response.success) {
+        setOtpSuccess(true);
+        setOtpError('');
         // Chuyển hướng đến trang đăng nhập sau 2 giây
         setTimeout(() => {
-          navigate('/login')
-        }, 2000)
+          navigate('/login');
+        }, 2000);
       } else {
-        setOtpError(data.message || 'Mã OTP không đúng')
+        setOtpError(response.message || 'Mã OTP không đúng');
       }
     } catch (error) {
-      setOtpError('Có lỗi xảy ra khi xác thực. Vui lòng thử lại.')
+      setOtpError('Có lỗi xảy ra khi xác thực. Vui lòng thử lại.');
     } finally {
-      setOtpLoading(false)
+      setOtpLoading(false);
     }
   }
 

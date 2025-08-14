@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
+import { apiService } from '../../services/api';
 import { 
   ArrowLeft, 
   Edit, 
@@ -63,12 +64,8 @@ export default function CoursePreview() {
 
   const fetchCourseDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/courses/${courseId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      const response = await apiService.getCourseDetail(courseId || '');
+      const data = response;
 
       if (data.success) {
         setCourse(data.data);
@@ -85,13 +82,8 @@ export default function CoursePreview() {
 
   const toggleLessonStatus = async (lessonId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}/toggle-status`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      const response = await apiService.toggleLessonStatus(lessonId);
+      const data = response;
       if (data.success) {
         await fetchCourseDetails();
       } else {

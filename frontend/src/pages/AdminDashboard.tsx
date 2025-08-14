@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
+import { apiService } from '../services/api'
 import { 
   Users, 
   BookOpen, 
@@ -174,12 +175,12 @@ export default function AdminDashboard() {
       };
 
       const [appsRes, coursesRes] = await Promise.all([
-        fetch('http://localhost:3000/api/admin/instructor-applications', { headers }),
-        fetch('http://localhost:3000/api/courses/admin/all', { headers })
+        apiService.getAdminInstructorApplications(),
+        apiService.getAdminAllCourses()
       ])
       
-      const appsData = await appsRes.json()
-      const coursesData = await coursesRes.json()
+      const appsData = appsRes
+      const coursesData = coursesRes
       
       if (appsData.success) {
         setApplications(appsData.data?.items || appsData.data || [])
@@ -204,38 +205,28 @@ export default function AdminDashboard() {
 
   const handleReviewApplication = async (id: string, action: 'approve' | 'reject', notes?: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/admin/instructor-applications/${id}/review`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        },
-        body: JSON.stringify({ action, notes })
-      })
+      const response = await apiService.reviewInstructorApplication(id, { action, notes })
       
-      if (response.ok) {
-        const result = await response.json();
-                                   showSuccessModal(
-            'Thành công',
-            result.message,
-            () => {
-              fetchData();
-              closeModal();
-              if (action === 'approve') {
-                setTimeout(() => {
-                  showModal(
-                    'Lưu ý',
-                    'User đã được cập nhật role thành teacher. Họ cần đăng xuất và đăng nhập lại để nhận quyền mới.',
-                    'info'
-                  );
-                }, 300);
-              }
+      if (response.success) {
+        showSuccessModal(
+          'Thành công',
+          response.message,
+          () => {
+            fetchData();
+            closeModal();
+            if (action === 'approve') {
+              setTimeout(() => {
+                showModal(
+                  'Lưu ý',
+                  'User đã được cập nhật role thành teacher. Họ cần đăng xuất và đăng nhập lại để nhận quyền mới.',
+                  'info'
+                );
+              }, 300);
             }
-          );
+          }
+        );
       } else {
-        const errorData = await response.json();
-        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi duyệt đơn đăng ký', 'error');
+        showModal('Lỗi', response.message || 'Có lỗi xảy ra khi duyệt đơn đăng ký', 'error');
       }
     } catch (error) {
       console.error('Error reviewing application:', error)
@@ -251,17 +242,9 @@ export default function AdminDashboard() {
         rejectionReason = prompt('Nhập lý do từ chối khóa học:') || 'Không có lý do';
       }
       
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/courses/${id}/admin-approval`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        },
-        body: JSON.stringify({ action, reason: rejectionReason })
-      })
+      const response = await apiService.updateCourseAdminApproval(id, { action, reason: rejectionReason })
       
-      if (response.ok) {
+      if (response.success) {
         showSuccessModal(
           'Thành công',
           `Khóa học đã được ${action === 'approve' ? 'duyệt' : 'từ chối'} thành công!`,
@@ -271,8 +254,7 @@ export default function AdminDashboard() {
           }
         );
       } else {
-        const errorData = await response.json()
-        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi duyệt khóa học', 'error');
+        showModal('Lỗi', response.message || 'Có lỗi xảy ra khi duyệt khóa học', 'error');
       }
     } catch (error) {
       console.error('Error approving course:', error)
@@ -282,17 +264,9 @@ export default function AdminDashboard() {
 
   const handleCourseStatus = async (id: string, status: 'draft' | 'published' | 'archived') => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/courses/${id}/admin-status`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        },
-        body: JSON.stringify({ status })
-      })
+      const response = await apiService.updateCourseAdminStatus(id, { status })
       
-      if (response.ok) {
+      if (response.success) {
         const statusText = status === 'published' ? 'xuất bản' : status === 'archived' ? 'lưu trữ' : 'bản nháp';
         showSuccessModal(
           'Thành công',
@@ -303,8 +277,7 @@ export default function AdminDashboard() {
           }
         );
       } else {
-        const errorData = await response.json()
-        showModal('Lỗi', errorData.message || 'Có lỗi xảy ra khi cập nhật trạng thái khóa học', 'error');
+        showModal('Lỗi', response.message || 'Có lỗi xảy ra khi cập nhật trạng thái khóa học', 'error');
       }
     } catch (error) {
       console.error('Error updating course status:', error)

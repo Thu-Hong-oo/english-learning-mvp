@@ -4,7 +4,18 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { ArrowLeft, Save, Eye } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { apiService } from '../../services/api';
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  BookOpen, 
+  Video, 
+  FileText, 
+  Headphones,
+  CheckCircle
+} from 'lucide-react';
 
 interface LessonFormData {
   title: string;
@@ -43,26 +54,11 @@ export default function EditLesson() {
 
   const fetchLessonDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      const response = await apiService.getLessonDetail(lessonId || '');
+      const data = response;
 
       if (data.success) {
-        setLesson(data.data);
-        setFormData({
-          title: data.data.title || '',
-          description: data.data.description || '',
-          content: data.data.content || '',
-          duration: data.data.duration || 30,
-          type: data.data.type || 'video',
-          videoUrl: data.data.videoUrl || '',
-          audioUrl: data.data.audioUrl || '',
-          order: data.data.order || 1,
-          status: data.data.status || 'draft'
-        });
+        setFormData(data.data);
       } else {
         alert('Không thể tải thông tin bài học');
       }
@@ -84,22 +80,14 @@ export default function EditLesson() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/api/lessons/${lessonId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
+      const response = await apiService.updateLesson(lessonId || '', formData);
+      const data = response;
 
       if (data.success) {
         alert('Bài học đã được cập nhật thành công!');
         navigate(`/teacher/courses/${courseId}/preview`);
       } else {
-        alert('Lỗi: ' + data.message);
+        alert('Lỗi: ' + (data.message || 'Không thể cập nhật bài học'));
       }
     } catch (error) {
       console.error('Error updating lesson:', error);
@@ -324,7 +312,7 @@ export default function EditLesson() {
                       {loading ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       ) : (
-                        <Save className="w-4 h-4 mr-2" />
+                        <CheckCircle className="w-4 h-4 mr-2" />
                       )}
                       Cập nhật bài học
                     </Button>
@@ -339,7 +327,7 @@ export default function EditLesson() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Eye className="w-4 h-4 mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2" />
                   Xem trước
                 </CardTitle>
               </CardHeader>

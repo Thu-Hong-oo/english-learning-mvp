@@ -1,12 +1,22 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
-import { Textarea } from '../../components/ui/textarea'
-import { Badge } from '../../components/ui/badge'
-import { ArrowLeft, Upload, Save, Eye } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 import { apiService } from '../../services/api';
+import { 
+  ArrowLeft, 
+  Plus, 
+  X, 
+  BookOpen, 
+  Tag, 
+  Target, 
+  FileText,
+  Upload,
+  CheckCircle
+} from 'lucide-react';
 
 interface CourseForm {
   title: string
@@ -130,7 +140,7 @@ export default function CreateCourse() {
               Quay lại chỉnh sửa
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>
-              <Save className="w-4 h-4 mr-2" />
+              <CheckCircle className="w-4 h-4 mr-2" />
               {loading ? 'Đang tạo...' : 'Tạo khóa học'}
             </Button>
           </div>
@@ -138,7 +148,7 @@ export default function CreateCourse() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">{formData.title}</CardTitle>
-              <CardDescription>{formData.description}</CardDescription>
+              <p className="text-lg text-gray-700">{formData.description}</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -211,7 +221,7 @@ export default function CreateCourse() {
             Quay lại Dashboard
           </Button>
           <Button onClick={() => setPreview(true)}>
-            <Eye className="w-4 h-4 mr-2" />
+            <BookOpen className="w-4 h-4 mr-2" />
             Xem trước
           </Button>
         </div>
@@ -219,9 +229,7 @@ export default function CreateCourse() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Tạo khóa học mới</CardTitle>
-            <CardDescription>
-              Điền thông tin chi tiết về khóa học của bạn
-            </CardDescription>
+            <p className="text-lg text-gray-700">Điền thông tin chi tiết về khóa học của bạn</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -337,13 +345,14 @@ export default function CreateCourse() {
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   />
                   <Button type="button" onClick={addTag} variant="outline">
+                    <Tag className="w-4 h-4 mr-1" />
                     Thêm
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {formData.tags.map((tag, index) => (
                     <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                      {tag} ×
+                      {tag} <X className="w-3 h-3 ml-1" />
                     </Badge>
                   ))}
                 </div>
@@ -360,6 +369,7 @@ export default function CreateCourse() {
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
                   />
                   <Button type="button" onClick={addRequirement} variant="outline">
+                    <Plus className="w-4 h-4 mr-1" />
                     Thêm
                   </Button>
                 </div>
@@ -374,7 +384,7 @@ export default function CreateCourse() {
                         onClick={() => removeRequirement(req)}
                         className="text-red-500 hover:text-red-700"
                       >
-                        ×
+                        <X className="w-3 h-3" />
                       </Button>
                     </li>
                   ))}
@@ -392,6 +402,7 @@ export default function CreateCourse() {
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addObjective())}
                   />
                   <Button type="button" onClick={addObjective} variant="outline">
+                    <Target className="w-4 h-4 mr-1" />
                     Thêm
                   </Button>
                 </div>
@@ -406,7 +417,7 @@ export default function CreateCourse() {
                         onClick={() => removeObjective(obj)}
                         className="text-red-500 hover:text-red-700"
                       >
-                        ×
+                        <X className="w-3 h-3" />
                       </Button>
                     </li>
                   ))}
@@ -419,7 +430,7 @@ export default function CreateCourse() {
                   Hủy
                 </Button>
                 <Button type="submit" disabled={loading}>
-                  <Save className="w-4 h-4 mr-2" />
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   {loading ? 'Đang tạo...' : 'Tạo khóa học'}
                 </Button>
               </div>

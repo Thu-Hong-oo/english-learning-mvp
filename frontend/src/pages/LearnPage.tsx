@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Play, FileText, Headphones, CheckCircle, Lock, Clock } from "lucide-react"
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Star, Clock, Users, BookOpen, Play, ArrowLeft, ArrowRight, CheckCircle, Lock } from 'lucide-react'
+import { apiService } from '../services/api'
 import { useAppSelector } from "../store/hooks"
 import { Button } from "../components/ui/button"
 
@@ -66,47 +67,41 @@ export default function LearnPage() {
 
       try {
         // Fetch course data
-        const courseResponse = await fetch(`http://localhost:3000/api/courses/${courseId}`);
-        const courseData = await courseResponse.json();
-
+        const courseResponse = await apiService.getCourseDetail(courseId);
+        const courseData = courseResponse;
+        
         if (courseData.success) {
           // Fetch published lessons for students
-          const lessonsResponse = await fetch(`http://localhost:3000/api/lessons/course/${courseId}/public`);
+          const lessonsResponse = await apiService.getLessonsByCoursePublic(courseId);
           
-          if (lessonsResponse.ok) {
-            const lessonsData = await lessonsResponse.json();
-            if (lessonsData.success) {
-              const lessons = lessonsData.data.sort((a: Lesson, b: Lesson) => a.order - b.order);
-              
-              setCourseData({
-                ...courseData.data,
-                lessons: lessons
-              });
-
-              // Set current lesson based on lessonId from URL or first lesson
-              if (lessonId) {
-                const targetLesson = lessons.find((lesson: Lesson) => lesson._id === lessonId);
-                if (targetLesson) {
-                  setCurrentLesson(targetLesson);
-                } else if (lessons.length > 0) {
-                  setCurrentLesson(lessons[0]);
-                }
-              } else if (lessons.length > 0) {
-                setCurrentLesson(lessons[0]);
-              }
-            }
-          } else {
+          if (lessonsResponse.success) {
+            const lessonsData = lessonsResponse.data.sort((a: Lesson, b: Lesson) => a.order - b.order);
+            
             setCourseData({
               ...courseData.data,
-              lessons: []
+              lessons: lessonsData
             });
+
+            // Set current lesson based on lessonId from URL or first lesson
+            if (lessonId) {
+              const targetLesson = lessonsData.find((lesson: Lesson) => lesson._id === lessonId);
+              if (targetLesson) {
+                setCurrentLesson(targetLesson);
+              } else if (lessonsData.length > 0) {
+                setCurrentLesson(lessonsData[0]);
+              }
+            } else if (lessonsData.length > 0) {
+              setCurrentLesson(lessonsData[0]);
+            }
           }
         } else {
-          setError(courseData.message || 'Failed to fetch course data');
+          setCourseData({
+            ...courseData.data,
+            lessons: []
+          });
         }
       } catch (error) {
-        console.error('Error fetching course:', error);
-        setError('Failed to fetch course data');
+        console.error('Error fetching course data:', error);
       } finally {
         setLoading(false);
       }
@@ -130,13 +125,13 @@ export default function LearnPage() {
       case 'video':
         return <Play className="w-4 h-4" />;
       case 'text':
-        return <FileText className="w-4 h-4" />;
+        return <BookOpen className="w-4 h-4" />;
       case 'audio':
-        return <Headphones className="w-4 h-4" />;
+        return <Users className="w-4 h-4" />;
       case 'quiz':
         return <CheckCircle className="w-4 h-4" />;
       default:
-        return <FileText className="w-4 h-4" />;
+        return <BookOpen className="w-4 h-4" />;
     }
   };
 
