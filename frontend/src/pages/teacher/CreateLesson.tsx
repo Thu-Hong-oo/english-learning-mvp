@@ -24,6 +24,27 @@ export default function CreateLesson() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [course, setCourse] = useState<any>(null);
+
+  // Helper function to convert YouTube URL to embed format
+  const convertToEmbedUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // YouTube watch URL pattern
+    const watchPattern = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/;
+    const match = url.match(watchPattern);
+    
+    if (match) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    
+    // Already embed URL
+    if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    
+    return url;
+  };
+
   const [formData, setFormData] = useState<LessonFormData>({
     title: '',
     description: '',
@@ -207,26 +228,46 @@ export default function CreateLesson() {
                   {formData.type === 'video' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        URL Video
+                        URL Video *
                       </label>
                       <Input
                         value={formData.videoUrl}
                         onChange={(e) => handleInputChange('videoUrl', e.target.value)}
-                        placeholder="https://www.youtube.com/embed/..."
+                        placeholder="https://www.youtube.com/watch?v=... hoặc https://youtu.be/..."
+                        required
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Hỗ trợ YouTube URLs. Hệ thống sẽ tự động chuyển đổi sang định dạng embed.
+                      </p>
+                      {formData.videoUrl && (
+                        <div className="mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleInputChange('videoUrl', convertToEmbedUrl(formData.videoUrl || ''))}
+                          >
+                            Chuyển đổi sang Embed URL
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {formData.type === 'audio' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        URL Audio
+                        URL Audio *
                       </label>
                       <Input
                         value={formData.audioUrl}
                         onChange={(e) => handleInputChange('audioUrl', e.target.value)}
                         placeholder="https://example.com/audio.mp3"
+                        required
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Hỗ trợ các định dạng audio: MP3, OGG, WAV
+                      </p>
                     </div>
                   )}
 
@@ -288,8 +329,26 @@ export default function CreateLesson() {
                   </div>
 
                   {formData.type === 'video' && formData.videoUrl && (
-                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-500">Video Preview</span>
+                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      <iframe
+                        src={convertToEmbedUrl(formData.videoUrl)}
+                        title="Video Preview"
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+
+                  {formData.type === 'audio' && formData.audioUrl && (
+                    <div className="bg-gray-100 rounded-lg p-4">
+                      <audio controls className="w-full">
+                        <source src={formData.audioUrl} type="audio/mpeg" />
+                        <source src={formData.audioUrl} type="audio/ogg" />
+                        <source src={formData.audioUrl} type="audio/wav" />
+                        Trình duyệt của bạn không hỗ trợ phát audio.
+                      </audio>
                     </div>
                   )}
 

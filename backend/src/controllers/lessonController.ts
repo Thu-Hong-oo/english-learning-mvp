@@ -2,6 +2,26 @@ import { Request, Response } from 'express';
 import Lesson from '../models/Lesson';
 import Course from '../models/Course';
 import { AuthRequest } from '../middleware/auth';
+import mongoose from 'mongoose';
+
+export const getLessonsByTeacher = async (req: AuthRequest, res: Response) => {
+  try {
+    const teacherId = req.user?.userId;
+    if (!teacherId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const lessons = await Lesson.find({ teacher: teacherId })
+      .populate('course', 'title')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: lessons });
+  } catch (error) {
+    console.error('Error fetching lessons by teacher:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 
 // Create lesson
 export const createLesson = async (req: AuthRequest, res: Response) => {
@@ -74,6 +94,11 @@ export const getLessonById = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
+    // ✅ Kiểm tra ID hợp lệ
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid lesson ID' });
+    }
+
     const lesson = await Lesson.findOne({ _id: id, teacher: teacherId })
       .populate('course', 'title');
 
@@ -81,10 +106,7 @@ export const getLessonById = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Lesson not found' });
     }
 
-    res.json({
-      success: true,
-      data: lesson
-    });
+    res.json({ success: true, data: lesson });
   } catch (error) {
     console.error('Error fetching lesson:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
