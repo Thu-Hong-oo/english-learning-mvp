@@ -250,6 +250,14 @@ class ApiService {
     });
   }
 
+  async updateCourse(id: string, data: any): Promise<ApiResponse> {
+    const endpoint = API_ENDPOINTS.COURSES.UPDATE.replace(':id', id);
+    return this.request(endpoint, {
+      method: HTTP_METHODS.PUT,
+      body: JSON.stringify(data),
+    });
+  }
+
   // Posts Methods
   async getPosts(params?: { status?: string; category?: string; search?: string }): Promise<ApiResponse> {
     let endpoint = API_ENDPOINTS.POSTS.LIST;
