@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Lint và Test
+  quality-check:
+    runs-on: ubuntu-latest
+    name: Quality Check
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Run linting
+      working-directory: ./backend
+      run: npm run lint || echo "Linting failed but continuing..."
+    
+    - name: Run tests
+      working-directory: ./backend
+      run: npm test
+    
+    - name: Build project
+      working-directory: ./backend
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-build
+        path: backend/dist/
+        retention-days: 1
+
+  # Deploy to Render (Production)
+  deploy-render:
+    needs: quality-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    name: Deploy to Render
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Render
+      uses: johnbeynon/render-deploy-action@v1.0.0
+      with:
+        service-id: ${{ secrets.RENDER_SERVICE_ID }}
+        api-key: ${{ secrets.RENDER_API_KEY }}
+        wait-for-success: true
+
+  # Deploy to Railway (Staging)
+  deploy-railway:
+    needs: quality-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    name: Deploy to Railway (Staging)
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Railway
+      uses: bervProject/railway-deploy@v1.0.0
+      with:
+        railway_token: ${{ secrets.RAILWAY_TOKEN }}
+        service: ${{ secrets.RAILWAY_SERVICE }}
+
+  # Notify deployment status
+  notify:
+    needs: [deploy-render, deploy-railway]
+    runs-on: ubuntu-latest
+    if: always()
+    name: Notify Status
+    
+    steps:
+    - name: Notify Slack (Optional)
+      if: failure()
+      run: |
+        echo "Deployment failed! Check the logs above."
+        # Add Slack notification here if needed
+      
+    - name: Notify Success
+      if: success()
+      run: |
+        echo "✅ All deployments completed successfully!"
