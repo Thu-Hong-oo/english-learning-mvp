@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useAppSelector } from '../store/hooks'
-import { apiService } from '../services/api'
+import { useAppSelector } from '@/store/hooks'
+import { apiService } from '@/services/api'
 import { 
   User, 
   BookOpen, 

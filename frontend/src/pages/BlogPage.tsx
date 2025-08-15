@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../store/hooks'
+import { useAppSelector } from '@/store/hooks'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { apiService } from '../services/api'
+import { apiService } from '@/services/api'
 import { Search, Clock, Eye, Heart, MessageCircle, Plus, Filter } from 'lucide-react'
 
 interface Post {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAppSelector } from '../store/hooks';
-import { apiService } from '../services/api';
+import { useAppSelector } from '@/store/hooks';
+import { apiService } from '@/services/api';
 import { ThumbsUp, ThumbsDown, MessageCircle, Edit, Trash2, Flag, User, Clock } from 'lucide-react';
 
 interface Comment {
