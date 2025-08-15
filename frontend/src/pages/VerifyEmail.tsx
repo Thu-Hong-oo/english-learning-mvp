@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { verifyEmail, resendOTP, clearError } from '../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { verifyEmail, resendOTP, clearError } from '@/store/slices/authSlice';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();

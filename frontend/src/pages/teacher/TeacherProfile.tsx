@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { apiService } from '../../services/api';
+import { apiService } from '@/services/api';
 import { 
   ArrowLeft, 
   User, 
@@ -17,7 +17,7 @@ import {
   Award,
   CheckCircle
 } from 'lucide-react';
-import { useAppSelector } from '../../store/hooks'
+import { useAppSelector } from '@/store/hooks'
 
 interface ProfileForm {
   fullName: string

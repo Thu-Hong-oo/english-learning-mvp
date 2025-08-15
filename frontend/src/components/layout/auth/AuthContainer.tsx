@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../../store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 

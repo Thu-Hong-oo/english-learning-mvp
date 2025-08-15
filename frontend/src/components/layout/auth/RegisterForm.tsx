@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { registerUser, clearError } from '../../../store/slices/authSlice';
-import { apiService } from '../../../services/api';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { registerUser, clearError } from '@/store/slices/authSlice';
+import { apiService } from '@/services/api';
 
 interface RegisterFormProps {
   onSuccess?: (email: string) => void; // callback when register successfully

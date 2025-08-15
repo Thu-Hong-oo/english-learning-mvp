@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Clock, Users, Star, Plus, Play, BookOpen } from 'lucide-react'
-import { useAppDispatch, useAppSelector } from '../../store/hooks'
-import { fetchFeaturedCourses } from '../../store/slices/courseSlice'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { fetchFeaturedCourses } from '@/store/slices/courseSlice'
 import { useNavigate } from 'react-router-dom'
 
 // Helper function to format price

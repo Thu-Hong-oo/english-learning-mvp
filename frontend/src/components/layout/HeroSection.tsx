@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../store/hooks';
+import { useAppSelector } from '@/store/hooks';
 
 export default function HeroSection() {
   const navigate = useNavigate();

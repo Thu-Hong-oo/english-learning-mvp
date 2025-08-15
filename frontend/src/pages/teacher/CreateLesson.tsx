@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Save, Eye, Plus, X, BookOpen, Video, FileText, Headphones, CheckCircle } from 'lucide-react';
-import { apiService } from '../../services/api';
+import { apiService } from '@/services/api';
 
 interface LessonFormData {
   title: string;
