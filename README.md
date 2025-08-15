@@ -5,10 +5,10 @@ Backend API cho ứng dụng học tiếng Anh với các tính năng:
 - Đăng ký/Đăng nhập người dùng
 - Quản lý khóa học và bài học
 - Hệ thống bài tập đa dạng
-- Theo dõi tiến độ học tập
+- Theo dõi tiến độ học tập(đang phát triển)
 - Tương tác người dùng (bình luận, đánh giá)
 - Quản lý từ vựng
-- Tích hợp AI (tùy chọn)
+- Tích hợp AI (đang phát triển)
 
 ## Công nghệ sử dụng
 - **Runtime**: Node.js
