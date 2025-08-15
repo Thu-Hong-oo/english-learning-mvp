@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../store/hooks';
-import { apiService } from '../services/api';
+import { useAppSelector } from '@/store/hooks';
+import { apiService } from '@/services/api';
 import { Calendar, Clock, User, Tag, Edit, Trash2, Eye, Heart, MessageCircle, Share2 } from 'lucide-react';
 import CommentSection from './CommentSection';
 

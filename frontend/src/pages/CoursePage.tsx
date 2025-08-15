@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAppSelector } from '../store/hooks'
 import { Star, Clock, Users, BookOpen, Play, Eye, Edit, Trash, CheckCircle, XCircle, Plus, Video, FileText, Headphones } from 'lucide-react'
 import { apiService } from '../services/api'
-import { Button } from "../components/ui/button"
+import { Button } from "@/components/ui/button"
 
 interface Lesson {
   _id: string

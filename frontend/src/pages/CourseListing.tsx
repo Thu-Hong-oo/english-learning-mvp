@@ -3,7 +3,7 @@
 import { useState, useEffect, type ReactNode } from "react"
 import { Search, Grid, List, Star, ChevronLeft, ChevronRight, Play, Eye, Clock, Users, BookOpen, DollarSign } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { apiService } from "../services/api"
+import { apiService } from "@/services/api"
 
 type Course = {
   _id: string

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAppSelector } from '../store/hooks';
-import { apiService } from '../services/api';
+import { useAppSelector } from '@/store/hooks';
+import { apiService } from '@/services/api';
 import { Save, X, Eye, EyeOff, Tag, Image as ImageIcon } from 'lucide-react';
 
 // Debug: Check if apiService is imported correctly

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAppDispatch } from '../store/hooks';
-import { googleAuthSuccess } from '../store/slices/authSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { googleAuthSuccess } from '@/store/slices/authSlice';
 
 export default function GoogleAuthSuccess() {
   const [searchParams] = useSearchParams();

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Star, Clock, Users, BookOpen, Play, ArrowLeft, ArrowRight, CheckCircle, Lock } from 'lucide-react'
-import { apiService } from '../services/api'
-import { useAppSelector } from "../store/hooks"
-import { Button } from "../components/ui/button"
+import { apiService } from '@/services/api'
+import { useAppSelector } from "@/store/hooks"
+import { Button } from "@/components/ui/button"
 
 interface Lesson {
   _id: string
