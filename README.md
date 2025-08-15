@@ -10,15 +10,6 @@ Backend API cho ứng dụng học tiếng Anh với các tính năng:
 - Quản lý từ vựng
 - Tích hợp AI (đang phát triển)
 
-## Công nghệ sử dụng
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB với Mongoose
-- **Authentication**: JWT
-- **Language**: TypeScript
-- **Validation**: Joi (có thể thêm)
-- **Testing**: Jest (có thể thêm)
-
 ## Cấu trúc Database
 
 ### 1. User Model
