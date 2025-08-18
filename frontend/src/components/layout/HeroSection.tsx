@@ -82,7 +82,7 @@ export default function HeroSection() {
           </div>
           <div className="relative">
             <img
-              src="./hero-student.png"
+              src="/hero-student.png"
               alt="Học viên đang học"
               className="w-full h-auto"
             />
