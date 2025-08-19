@@ -10,8 +10,13 @@ services:
       - PORT=3000
       - MONGO_URI=mongodb://mongo:27017/english_learning
       - JWT_SECRET=dev-secret-key
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     volumes:
       - .:/app
       - /app/node_modules
